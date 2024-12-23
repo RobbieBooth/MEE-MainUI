@@ -18,6 +18,8 @@
     "@remix-run/node": "^2.15.2",
     "@remix-run/react": "^2.15.2",
     "@remix-run/serve": "^2.15.2",
+    "@stomp/stompjs": "^7.0.0",
+    "@types/sockjs-client": "^1.5.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.5.1",
@@ -26,6 +28,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "remix-themes": "^1.5.1",
+    "sockjs-client": "^1.6.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7"
   },

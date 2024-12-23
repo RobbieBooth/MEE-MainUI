@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import {Button} from "~/components/ui/button";
-import {SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarProvider, SidebarTrigger} from "~/components/ui/sidebar";
+import {SidebarProvider, SidebarTrigger} from "~/components/ui/sidebar";
 import {AppSidebar, FlagManager} from "~/components/quizSection/quizSideBar";
 import React from "react";
 import {ChevronLeft, ChevronRight} from "lucide-react";
@@ -38,7 +38,7 @@ export default function Index() {
     const [currentQuestion, setCurrentQuestion] = React.useState(questions[0]);
 
     function setFlagged(question:Question, flag: boolean){
-        let newQuestions = questions.map((question1)=>{
+        const newQuestions = questions.map((question1)=>{
            if(question1.uuid === question.uuid){
                question.isFlagged = flag;
            }
