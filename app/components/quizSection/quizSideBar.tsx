@@ -13,7 +13,7 @@ import {
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "~/components/ui/carousel";
 import {Card, CardContent} from "~/components/ui/card";
 import {Button} from "~/components/ui/button";
-import {Question} from "~/routes/about";
+import {StudentQuestionAttempt as Question} from "~/components/MEETypes/studentAttempt";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@radix-ui/react-tooltip";
 import React, {Component} from "react";
 
@@ -69,9 +69,9 @@ export function AppSidebar({questions, currentQuestion, setCurrentQuestion, setF
                                                     <CardContent
                                                         className="relative flex items-center justify-center p-6 ">
                                                         <Button variant="secondary"
-                                                                className={`text-3xl font-semibold ${(currentQuestion.uuid === question.uuid ? "underline" : "")}`}
+                                                                className={`text-3xl font-semibold ${(currentQuestion.studentQuestionAttemptUUID === question.studentQuestionAttemptUUID ? "underline" : "")}`}
                                                                 onClick={() => setCurrentQuestion(question)}>{index + 1}</Button>
-                                                        <FlagManager isFlagged={question.isFlagged} setFlagged={(flag:boolean) => setFlagged(question, flag)}/>
+                                                        <FlagManager isFlagged={question.flagged} setFlagged={(flag:boolean) => setFlagged(question, flag)}/>
 
                                                     </CardContent>
                                                 </Card>
