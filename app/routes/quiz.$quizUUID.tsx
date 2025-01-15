@@ -1,6 +1,6 @@
 import { useParams } from "@remix-run/react";
 import {useStompWithSend} from "~/components/hooks/stompMessageHook";
-import React, {useEffect} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {SidebarProvider, SidebarTrigger} from "~/components/ui/sidebar";
 import {AppSidebar, FlagManager} from "~/components/quizSection/quizSideBar";
 import {Button} from "~/components/ui/button";
@@ -63,12 +63,50 @@ export default function QuizPage() {
 }
 
 function QuizDisplay({studentQuizAttempt, toggleFlagFunction}:{studentQuizAttempt:StudentQuizAttempt, toggleFlagFunction:(questionUUID:string)=>void}) {
-
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const [iframeLoaded, setIframeLoaded] = useState(false); // Track iframe load state
     const [currentQuestion, setCurrentQuestion] = React.useState(studentQuizAttempt.questions[0]);
 
     function setFlagged(question:StudentQuestionAttempt, flag: boolean){
         toggleFlagFunction(question.studentQuestionAttemptUUID);
     }
+
+    const handleMessage = (event: MessageEvent) => {
+        if (event.data?.type === "FROM_EMBEDDED_PAGE") {
+            console.log("Received data from iframe:", event.data.payload);
+        }
+    };
+
+    // Function to send a request for data to the iframe
+    const requestDataFromIframe = () => {
+        if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.postMessage({ type: "REQUEST_DATA" }, "*");
+        }
+    };
+
+    const sendMessageToIframe = () => {
+        // Ensure the iframe reference is valid
+        if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.postMessage({ type: "SEND_DATA", payload: currentQuestion.studentQuestionAttemptUUID}, "*");
+        }
+    };
+
+    useEffect(() => {
+        // Set up a listener for messages
+        window.addEventListener("message", handleMessage);
+
+        // Clean up the listener on unmount
+        return () => {
+            window.removeEventListener("message", handleMessage);
+        };
+    }, []);
+
+    useEffect(() => {
+        // Whenever currentQuestion changes, send the updated question to the iframe
+        if (iframeLoaded) {
+            sendMessageToIframe();
+        }
+    }, [currentQuestion, iframeLoaded]); // Runs whenever currentQuestion changes
 
     return (
         <div>
@@ -84,7 +122,13 @@ function QuizDisplay({studentQuizAttempt, toggleFlagFunction}:{studentQuizAttemp
 
                     </div>
                     <div className="grow">
-                        <iframe title={currentQuestion.moduleName} className="grow w-full h-full border-none" src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}/>
+                        <button onClick={requestDataFromIframe}>Request Data from Iframe</button>
+                        <button onClick={sendMessageToIframe}>Send Data to Iframe</button>
+                        {/*<iframe title={currentQuestion.moduleName} className="grow w-full h-full border-none" src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}/>*/}
+                        <iframe ref={iframeRef} title={currentQuestion.moduleName}
+                                className="grow w-full h-full border-none" src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}
+                                onLoad={() => setIframeLoaded(true)} // Set iframeLoaded to true when iframe loads
+                        />
                     </div>
                     <div className="flex self-end gap-4 px-4 pb-4 mt-2">
                     <Button>Save</Button>
