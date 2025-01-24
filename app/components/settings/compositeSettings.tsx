@@ -1,6 +1,6 @@
 // Enums
-import {required} from "valibot";
-import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from "uuid";
+import {Operations, SettingListOperation} from "~/components/settings/components/settingList";
 
 export enum SettingType {
     Toggle = "Toggle",
@@ -328,3 +328,82 @@ export function parseSettings(jsonInput: string): BaseSetting[] {
     }
 }
 
+
+export function updateSetting(setting:BaseSetting, newValue:any) {
+    switch (setting.type) {
+        case SettingType.Toggle:
+            // eslint-disable-next-line no-case-declarations
+            const toggleSetting = setting as ToggleSetting;
+            toggleSetting.value = newValue;
+            return toggleSetting;
+        case SettingType.Input:
+            // eslint-disable-next-line no-case-declarations
+            const inputSetting = setting as InputSetting;
+            inputSetting.value = newValue;
+            return inputSetting;
+        case SettingType.Select:
+            // eslint-disable-next-line no-case-declarations
+            const selectSetting = setting as SelectSetting;
+            selectSetting.value = newValue;
+            return selectSetting;
+        case SettingType.File:
+            // eslint-disable-next-line no-case-declarations
+            const fileSetting = setting as FileInputSetting;
+            fileSetting.files = newValue;
+            return fileSetting;
+        case SettingType.Group:
+            // eslint-disable-next-line no-case-declarations
+            //Throw error as we cant update this
+            // throw Error("Cant update group setting");
+            return setting as GroupSetting; //cannot update group setting
+        case SettingType.ListSetting:
+            // eslint-disable-next-line no-case-declarations
+            const listSetting = setting as ListSetting;
+            // eslint-disable-next-line no-case-declarations
+            const listOperations = (newValue || []) as SettingListOperation[];
+
+            return updateListSettingValue(listSetting, listOperations);
+        case SettingType.ConditionalSetting:
+            // eslint-disable-next-line no-case-declarations
+            // conditionalSetting.
+            //everything should get done for us, toggle should get updated and so should children
+            return setting as ConditionalSetting;
+
+    }
+}
+
+function updateListSettingValue(setting:ListSetting, operations:SettingListOperation[]){
+    console.log(operations);
+    // if(operations.length === 0){
+    //     return setting;
+    // }
+
+    //Operation to make request operations more effective
+    const childrenMap = new Map<string, GroupSetting>();
+    setting.children.forEach((child)=>{
+        childrenMap.set(child.id, child);
+    });
+
+    // const addOperations = operations.filter((value) => value.operation === Operations.Add);
+    // const removeOperations = operations.filter((value) => value.operation === Operations.Remove);
+    operations.forEach((value) =>{
+        if(value.operation === Operations.Add){
+            if(childrenMap.has(value.id)){
+                return;
+            }
+
+            const newComponent = JSON.parse(JSON.stringify(setting.settingToAdd));
+            newComponent.id = value.id;
+            childrenMap.set(newComponent.id, newComponent);
+            return;
+        }
+
+        if(value.operation === Operations.Remove){
+            childrenMap.delete(value.id);
+            return;
+        }
+    });
+
+    setting.children = Array.from(childrenMap.values());
+    return setting;
+}

@@ -2,7 +2,13 @@ import React, {useEffect, useState} from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { renderSetting } from "./renderSetting";
 import {Button} from "~/components/ui/button";
-import {BaseSetting, parseSettings} from "~/components/settings/compositeSettings"; // Import the utility function
+import {
+    BaseSetting, ConditionalSetting, GroupSetting, ListSetting,
+    parseSettings,
+    SettingType,
+    ToggleSetting,
+    updateSetting
+} from "~/components/settings/compositeSettings"; // Import the utility function
 
 export const DynamicForm = ({ settings }: { settings: string }) => {
     const [baseSettings, setBaseSettings] = useState<BaseSetting[]>([]);
@@ -11,6 +17,9 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
 
     const onSubmit = (data: any) => {
         console.log("Form Submitted:", data);
+        const newSettings = updateSettingData(data, baseSettings);
+        console.log(newSettings);
+        setBaseSettings(newSettings);
     };
 
     const onFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -22,20 +31,53 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
         setBaseSettings(parseSettings(settings));
     }, [settings]);
 
-    // Add a new component to the group
-    const addComponent = (parentID: string, component: BaseSetting) => {
+    const updateSettingData = (ids: { [key: string]: any }, settings:BaseSetting[])=> {
+        return settings.map((setting) =>{
+            let baseSetting = setting;
+            const id = baseSetting.id;
+            //big o of o(1) since has table
+            if (id in ids) {
+                const value = ids[id];
+                baseSetting = updateSetting(baseSetting, value);
+            }
 
+            //Run through composites and update their children
+            switch (baseSetting.type) {
+                case SettingType.Group:
+                    // eslint-disable-next-line no-case-declarations
+                    const groupSetting = baseSetting as GroupSetting;
+                    groupSetting.children = updateSettingData(ids, groupSetting.children);
+                    return groupSetting;
+                case SettingType.ListSetting:
+                    // eslint-disable-next-line no-case-declarations
+                    const listSetting = baseSetting as ListSetting;
+                    listSetting.children = updateSettingData(ids, listSetting.children) as GroupSetting[];
+                    return listSetting;
+                case SettingType.ConditionalSetting:
+                    // eslint-disable-next-line no-case-declarations
+                    let conditionalSetting = baseSetting as ConditionalSetting;
+                    conditionalSetting = updateConditionalData(ids, conditionalSetting);
+                    return conditionalSetting;
+            }
+            return baseSetting;
+        })
     };
 
-    // Remove a component by its ID
-    const removeComponent = (id: string) => {
+    const updateConditionalData = (ids: { [key: string]: any }, setting:ConditionalSetting)=> {
+        const newSetting = setting;
+        const toggleSetting = newSetting.condition;
+        if (toggleSetting.id in ids) {
+            const value = ids[toggleSetting.id];
+            newSetting.condition = updateSetting(toggleSetting, value) as ToggleSetting;
+        }
 
-    };
+        const groupSetting = setting.group as GroupSetting;
+        groupSetting.children = updateSettingData(ids, groupSetting.children);
+        newSetting.group = groupSetting;
+        return newSetting;
+    }
 
-    // Update a component's value by its ID
-    const updateComponent = (id: string, fieldName:string, value: any) => {
 
-    };
 
     return (
         <FormProvider {...methods}>

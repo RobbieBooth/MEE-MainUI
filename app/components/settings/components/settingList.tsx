@@ -7,10 +7,15 @@ import {Plus} from "lucide-react";
 import {SettingTooltip} from "~/components/settings/components/settingTooltip";
 import {GroupTitle} from "~/components/settings/components/settingGroup";
 import { v4 as uuidv4 } from "uuid";
+import {Controller} from "react-hook-form";
 
-enum Operations {
+export enum Operations {
     Add,
     Remove
+}
+export interface SettingListOperation {
+    id: string;
+    operation: Operations;
 }
 
 export function SettingList({
@@ -26,10 +31,11 @@ export function SettingList({
 }): JSX.Element {
     //bad way to do it but seems like only way to stop constant re-renders 
     const [allChildren, setAllChildren] = useState<GroupSetting[]>([]);
-    const [operationsPerformed, setOperationsPerformed] = useState<{id: string, operation: Operations}[]>([]);//pass the operations to the component at the end and have it work through them
+    const [operationsPerformed, setOperationsPerformed] = useState<SettingListOperation[]>([]);//pass the operations to the component at the end and have it work through them
 
     useEffect(()=>{
         setAllChildren(listSetting.children);
+        setOperationsPerformed([]);
     }, [listSetting.children]);
 
     function removeComponent(id: string) {
@@ -38,16 +44,23 @@ export function SettingList({
         setOperationsPerformed((prev) => [...prev, {id:id, operation:Operations.Remove}]);
     }
     
-    function addComponent() {
+    function addComponent(field:(...event: any[]) => void) {
         const id = uuidv4();
         // Create a deep copy of the object
         const newComponent = JSON.parse(JSON.stringify(listSetting.settingToAdd));
         newComponent.id = id;
+        const newOperationsArray = [...operationsPerformed, {id:id, operation:Operations.Add}];
+        field(newOperationsArray);
+        setOperationsPerformed(newOperationsArray);
         setAllChildren([...allChildren, newComponent]);
-        setOperationsPerformed((prev) => [...prev, {id:id, operation:Operations.Add}]);
     }
 
     return (
+        <Controller
+            control={control}
+            name={listSetting.id} // Use the id as the name
+            defaultValue={operationsPerformed} // Set the default value
+            render={({field}) => (
         <fieldset key={listSetting.id} className="space-x-3 space-y-0 rounded-md border p-4">
             <GroupTitle label={listSetting.label} tooltip={listSetting.tooltip} />
 
@@ -58,7 +71,8 @@ export function SettingList({
                 <Button
                     type="button"
                     onClick={() => {
-                        addComponent();
+                        addComponent(field.onChange);
+
                     }}
                     disabled={!listSetting.allowAddition}
                 >
@@ -67,5 +81,6 @@ export function SettingList({
             </div>
 
         </fieldset>
+            )}/>
     );
 }
