@@ -21,10 +21,12 @@ import {
 export function SelectSettingComponent(
     {
         selectSetting,
-        control
+        control,
+        updateValue,
     }:{
         selectSetting:SelectSetting
         control: any; // Update with the correct type from your form library
+        updateValue?: (value:string[]) => void;
 }) {
     return(
         <div key={selectSetting.id}>
@@ -40,7 +42,13 @@ export function SelectSettingComponent(
                             <Select
                                 defaultValue={field.value}
                                 value={field.value}
-                                onValueChange={field.onChange}>
+                                onValueChange={(selected)=>{
+                                    field.onChange(selected);
+
+                                    if(updateValue != null){
+                                        updateValue([selected]);
+                                    }
+                                }}>
 
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder={selectSetting.tooltip}/>
@@ -65,7 +73,13 @@ export function SelectSettingComponent(
                         render={({field}) => (
                             <MultiSelector
                             values={field.value}
-                            onValuesChange={field.onChange}
+                            onValuesChange={(selected)=>{
+                                field.onChange(selected);
+
+                                if(updateValue != null){
+                                    updateValue(selected);
+                                }
+                            }}
                             loop
                             className="max-w-xs"
                         >

@@ -1,14 +1,10 @@
-import {ConditionalSetting, ToggleDisplay, ToggleSetting} from "~/components/settings/compositeSettings";
-import {Checkbox} from "~/components/ui/checkbox";
-import {SettingTooltip} from "~/components/settings/components/settingTooltip";
-import {Switch} from "~/components/ui/switch";
-import {Controller} from "react-hook-form";
+import {ConditionalSetting, ToggleSetting} from "~/components/settings/compositeSettings";
 import React, {useEffect, useState} from "react";
 import {renderSetting} from "~/components/settings/greenMan/renderSetting";
 import {GroupTitle} from "~/components/settings/components/settingGroup";
 import {Toggle} from "~/components/settings/components/toggle";
 
-export function SettingConditional({
+export function SettingConditionalBool({
                            conditionalSetting,
                            control,
                                        register,

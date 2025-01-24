@@ -1,26 +1,25 @@
 import React from "react";
-import { useForm, Controller } from "react-hook-form";
 
 import {
-    BaseSetting, ConditionalSetting, FileInputSetting, GroupSetting,
+    BaseSetting, ConditionalSelect,
+    ConditionalSetting,
+    FileInputSetting,
+    GroupSetting,
     InputSetting,
-    SelectSetting, ListSetting,
-    SettingType, ToggleDisplay,
+    ListSetting,
+    SelectSetting,
+    SettingType,
     ToggleSetting
 } from "~/components/settings/compositeSettings";
-import {Switch} from "~/components/ui/switch";
 import {Input} from "~/components/ui/input";
-import {Button} from "~/components/ui/button";
-import {Select} from "~/components/ui/select";
 import {Toggle} from "~/components/settings/components/toggle";
-import {FormControl, FormItem, FormLabel, FormMessage} from "~/components/ui/form";
-import {Checkbox} from "~/components/ui/checkbox";
 import {SettingTooltip} from "~/components/settings/components/settingTooltip";
 import {SelectSettingComponent} from "~/components/settings/components/selectSettingComponent";
 import {FileUploaderSetting} from "~/components/settings/components/fileUploaderSetting";
 import {SettingGroup} from "~/components/settings/components/settingGroup";
 import {SettingList} from "~/components/settings/components/settingList";
-import {SettingConditional} from "~/components/settings/components/settingConditional";
+import {SettingConditionalBool} from "~/components/settings/components/settingConditionalBool";
+import {SettingConditionalSelect} from "~/components/settings/components/settingConditionalSelect";
 
 const renderSetting = (
     setting: BaseSetting,
@@ -88,9 +87,14 @@ const renderSetting = (
             // eslint-disable-next-line no-case-declarations
             const conditionalSetting = setting as ConditionalSetting;
             return (
-                <SettingConditional key={setting.id} conditionalSetting={conditionalSetting} control={control} register={register} setValue={setValue}/>
+                <SettingConditionalBool key={setting.id} conditionalSetting={conditionalSetting} control={control} register={register} setValue={setValue}/>
             );
-
+        case SettingType.ConditionalSelect:
+            // eslint-disable-next-line no-case-declarations
+            const conditionalSelect = setting as ConditionalSelect;
+            return(
+                <SettingConditionalSelect conditionalSelect={conditionalSelect} control={control} register={register} setValue={setValue}/>
+            );
         default:
             return null;
     }

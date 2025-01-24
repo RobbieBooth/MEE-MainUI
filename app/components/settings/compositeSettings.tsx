@@ -10,6 +10,7 @@ export enum SettingType {
     Group = "Group",
     ListSetting = "ListSetting",
     ConditionalSetting = "ConditionalSetting",
+    ConditionalSelect = "ConditionalSelect",
 }
 
 export enum ToggleDisplay {
@@ -30,12 +31,7 @@ export interface BaseSetting extends TooltipSetting, Name {
     type: SettingType;
     required: boolean;
     disabled: boolean;
-    id: string;//Only for form unique elements etc
-
-    // Composite pattern: children for hierarchical settings
-    // add?(setting: BaseSetting): void;
-    // remove?(setting: BaseSetting): void;
-    // getChildren?(): BaseSetting[];
+    id: string;//Only for form unique elements etc - gets assigned by front end
 }
 
 // Leaf: ToggleSetting
@@ -87,10 +83,6 @@ export interface FileInputSetting extends BaseSetting {
 export interface GroupSetting extends BaseSetting {
     type: SettingType.Group;
     children: BaseSetting[];
-
-    // add(setting: BaseSetting): void;
-    // remove(setting: BaseSetting): void;
-    // getChildren(): BaseSetting[];
 }
 
 // Composite: SettingList
@@ -102,10 +94,6 @@ export interface ListSetting extends BaseSetting {
     maxAmount: number | null; // Null = no max
     minAmount: number | null; // Null = no min
     settingToAdd: GroupSetting;
-
-    // add(setting: GroupSetting): void;
-    // remove(setting: GroupSetting): void;
-    // getChildren(): GroupSetting[];
 }
 
 // Composite: ConditionalSetting
@@ -113,129 +101,14 @@ export interface ConditionalSetting extends BaseSetting {
     type: SettingType.ConditionalSetting;
     condition: ToggleSetting;
     group: GroupSetting;
-
-    // add(setting: BaseSetting): void;
-    // remove(setting: BaseSetting): void;
-    // getChildren(): BaseSetting[];
 }
 
-// // Implementations for Composite Nodes
-// export class GroupSettingImpl implements GroupSetting {
-//     type:SettingType.Group = SettingType.Group;
-//     children: BaseSetting[] = [];
-//     tooltip: string;
-//     label: string;
-//     required: boolean;
-//     disabled: boolean;
-//
-//     constructor(name: string, tooltip: string, required: boolean, disabled: boolean) {
-//         this.label = name;
-//         this.tooltip = tooltip;
-//         this.required = required;
-//         this.disabled = disabled;
-//     }
-//
-//     add(setting: BaseSetting): void {
-//         this.children.push(setting);
-//     }
-//
-//     remove(setting: BaseSetting): void {
-//         this.children = this.children.filter((child) => child !== setting);
-//     }
-//
-//     getChildren(): BaseSetting[] {
-//         return this.children;
-//     }
-// }
-//
-// export class SettingListImpl implements SettingList {
-//     type: SettingType.SettingList = SettingType.SettingList; // Explicitly set the type as SettingType.SettingList
-//     children: GroupSetting[] = [];
-//     settingToAdd: GroupSetting;
-//     allowAddition: boolean;
-//     allowRemoval: boolean;
-//     maxAmount: number | null;
-//     minAmount: number | null;
-//     tooltip: string;
-//     label: string;
-//     required: boolean;
-//     disabled: boolean;
-//
-//
-//     constructor(
-//         name: string,
-//         tooltip: string,
-//         allowAddition: boolean,
-//         allowRemoval: boolean,
-//         maxAmount: number | null,
-//         minAmount: number | null,
-//         required: boolean,
-//         disabled: boolean,
-//         settingToAdd: GroupSetting,
-//     ) {
-//         this.label = name;
-//         this.tooltip = tooltip;
-//         this.allowAddition = allowAddition;
-//         this.allowRemoval = allowRemoval;
-//         this.maxAmount = maxAmount;
-//         this.minAmount = minAmount;
-//         this.required = required;
-//         this.disabled = disabled;
-//         this.settingToAdd = settingToAdd;
-//     }
-//
-//     add(): void {
-//         if (this.maxAmount === null || this.children.length < this.maxAmount) {
-//             this.children.push(this.settingToAdd);
-//         } else {
-//             throw new Error("Cannot add more settings. Max amount reached.");
-//         }
-//     }
-//
-//     remove(setting: GroupSetting): void {
-//         this.children = this.children.filter((child) => child !== setting);
-//     }
-//
-//     getChildren(): GroupSetting[] {
-//         return this.children;
-//     }
-// }
-//
-// export class ConditionalSettingImpl implements ConditionalSetting {
-//     type:SettingType.ConditionalSetting = SettingType.ConditionalSetting;
-//     condition: ToggleSetting;
-//     childSettings: BaseSetting[] = [];
-//     tooltip: string;
-//     label: string;
-//     required: boolean;
-//     disabled: boolean;
-//
-//     constructor(
-//         name: string,
-//         tooltip: string,
-//         condition: ToggleSetting,
-//         required: boolean,
-//         disabled: boolean
-//     ) {
-//         this.label = name;
-//         this.tooltip = tooltip;
-//         this.condition = condition;
-//         this.required = required;
-//         this.disabled = disabled;
-//     }
-//
-//     add(setting: BaseSetting): void {
-//         this.childSettings.push(setting);
-//     }
-//
-//     remove(setting: BaseSetting): void {
-//         this.childSettings = this.childSettings.filter((child) => child !== setting);
-//     }
-//
-//     getChildren(): BaseSetting[] {
-//         return this.childSettings;
-//     }
-// }
+// Multi select must be false as it selects one option from group
+export interface ConditionalSelect extends BaseSetting {
+    type: SettingType.ConditionalSelect;
+    condition: SelectSetting; // The SelectSetting acts as the condition
+    groups: Record<string, GroupSetting>; // A map where each key corresponds to a value in the SelectSetting, and the value is a GroupSetting
+}
 
 function castToBaseSetting(json: any): BaseSetting {
     const settingUUID = uuidv4();
@@ -309,7 +182,19 @@ function castToBaseSetting(json: any): BaseSetting {
                 condition: castToBaseSetting(json.condition) as ToggleSetting,
                 group: castToBaseSetting(json.group) as GroupSetting,
             } as ConditionalSetting;
-
+        case SettingType.ConditionalSelect:
+            return {
+                ...json,
+                id: settingUUID,
+                type: SettingType.ConditionalSelect,
+                condition: castToBaseSetting(json.condition) as SelectSetting,
+                groups: Object.fromEntries(
+                    Object.entries(json.groups).map(([key, group]) => [
+                        key,
+                        castToBaseSetting(group) as GroupSetting,
+                    ])
+                ),
+            }
         default:
             throw new Error(`Unknown setting type: ${json.type}`);
     }
@@ -329,7 +214,7 @@ export function parseSettings(jsonInput: string): BaseSetting[] {
 }
 
 
-export function updateSetting(setting:BaseSetting, newValue:any) {
+export function updateSettingData(setting:BaseSetting, newValue:any) {
     switch (setting.type) {
         case SettingType.Toggle:
             // eslint-disable-next-line no-case-declarations
@@ -372,7 +257,11 @@ export function updateSetting(setting:BaseSetting, newValue:any) {
             // conditionalSetting.
             //everything should get done for us, toggle should get updated and so should children
             return setting as ConditionalSetting;
-
+        case SettingType.ConditionalSelect:
+            //everything should get done for us, select should get updated and so should group children
+            return setting as ConditionalSelect;
+        default:
+            throw new Error(`Unknown setting type: ${setting.type}`);
     }
 }
 

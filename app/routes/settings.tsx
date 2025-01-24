@@ -267,7 +267,110 @@ const SETTING_JSON_EXAMPLE = `[
         }
       ]
     }
+    },
+    {
+  "type": "ConditionalSelect",
+  "label": "Advanced Settings by Category",
+  "tooltip": "Select a category to configure its settings",
+  "required": false,
+  "disabled": false,
+  "condition": {
+    "type": "Select",
+    "label": "Category",
+    "tooltip": "Choose a category",
+    "required": true,
+    "disabled": false,
+    "value": ["Security"],
+    "availableValues": ["Security", "Performance", "Appearance"],
+    "multiSelect": false
+  },
+  "groups": {
+    "Security": {
+      "type": "Group",
+      "label": "Security Settings",
+      "tooltip": "Adjust security-related settings",
+      "required": false,
+      "disabled": false,
+      "children": [
+        {
+          "type": "Toggle",
+          "label": "Enable Two-Factor Authentication",
+          "tooltip": "Enable or disable two-factor authentication",
+          "required": false,
+          "disabled": false,
+          "value": true,
+          "display": "Switch"
+        },
+        {
+          "type": "Input",
+          "label": "Security Question",
+          "tooltip": "Set your security question",
+          "required": true,
+          "disabled": false,
+          "value": "What is your favorite color?",
+          "maxCharacters": 100,
+          "maxLines": "1"
+        }
+      ]
+    },
+    "Performance": {
+      "type": "Group",
+      "label": "Performance Settings",
+      "tooltip": "Adjust performance-related settings",
+      "required": false,
+      "disabled": false,
+      "children": [
+        {
+          "type": "Toggle",
+          "label": "Enable Caching",
+          "tooltip": "Enable or disable caching",
+          "required": false,
+          "disabled": false,
+          "value": true,
+          "display": "Checkbox"
+        },
+        {
+          "type": "Input",
+          "label": "Cache Size",
+          "tooltip": "Specify the cache size in MB",
+          "required": true,
+          "disabled": false,
+          "value": "512",
+          "maxCharacters": 10,
+          "maxLines": "1"
+        }
+      ]
+    },
+    "Appearance": {
+      "type": "Group",
+      "label": "Appearance Settings",
+      "tooltip": "Adjust appearance-related settings",
+      "required": false,
+      "disabled": false,
+      "children": [
+        {
+          "type": "Select",
+          "label": "Theme",
+          "tooltip": "Select a theme",
+          "required": false,
+          "disabled": false,
+          "value": ["Dark"],
+          "availableValues": ["Light", "Dark", "System"],
+          "multiSelect": false
+        },
+        {
+          "type": "Toggle",
+          "label": "Enable Animations",
+          "tooltip": "Toggle animations on or off",
+          "required": false,
+          "disabled": false,
+          "value": true,
+          "display": "Switch"
+        }
+      ]
     }
+  }
+}
 
   ]`;
 
