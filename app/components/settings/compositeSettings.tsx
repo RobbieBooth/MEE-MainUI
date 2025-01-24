@@ -344,7 +344,11 @@ export function updateSetting(setting:BaseSetting, newValue:any) {
         case SettingType.Select:
             // eslint-disable-next-line no-case-declarations
             const selectSetting = setting as SelectSetting;
-            selectSetting.value = newValue;
+            if(!selectSetting.multiSelect){
+                selectSetting.value = [newValue];
+            }else{
+                selectSetting.value = newValue;
+            }
             return selectSetting;
         case SettingType.File:
             // eslint-disable-next-line no-case-declarations
