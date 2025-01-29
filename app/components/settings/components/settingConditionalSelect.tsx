@@ -1,7 +1,7 @@
 import {
-    ConditionalSelect,
-    ConditionalSetting, SelectSetting,
-    ToggleDisplay,
+    ConditionalSelectSetting,
+    ConditionalBoolSetting, SelectSetting,
+    ToggleDisplayType,
     ToggleSetting
 } from "~/components/settings/compositeSettings";
 import {Checkbox} from "~/components/ui/checkbox";
@@ -20,7 +20,7 @@ export function SettingConditionalSelect({
                                            register,
                                            setValue,
                                        }: {
-    conditionalSelect: ConditionalSelect;
+    conditionalSelect: ConditionalSelectSetting;
     control: any; // Update with the correct type from your form library
     register: any,
     setValue: any,

@@ -1,4 +1,4 @@
-import {ToggleDisplay, ToggleSetting} from "~/components/settings/compositeSettings";
+import {ToggleDisplayType, ToggleSetting} from "~/components/settings/compositeSettings";
 import {Checkbox} from "~/components/ui/checkbox";
 import {SettingTooltip} from "~/components/settings/components/settingTooltip";
 import {Switch} from "~/components/ui/switch";
@@ -27,7 +27,7 @@ export function Toggle({
                             className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
                             <div className="flex items-center">
                                 {/* Toggle Display Logic */}
-                                {toggleSetting.display === ToggleDisplay.Checkbox && (
+                                {toggleSetting.display === ToggleDisplayType.Checkbox && (
                                     <Checkbox
                                         checked={field.value}
                                         onCheckedChange={(checked)=>{
@@ -42,7 +42,7 @@ export function Toggle({
                                         disabled={toggleSetting.disabled}
                                     />
                                 )}
-                                {toggleSetting.display === ToggleDisplay.Switch && (
+                                {toggleSetting.display === ToggleDisplayType.Switch && (
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={(bool)=>{
@@ -62,7 +62,7 @@ export function Toggle({
                             {/*</div>*/}
                             <div className="flex flex-row items-center space-x-2 leading-none">
                                 <p>{toggleSetting.label}</p>
-                                <SettingTooltip tooltip={toggleSetting.tooltip}/>
+                                {toggleSetting.tooltip && <SettingTooltip tooltip={toggleSetting.tooltip}/>}
                             </div>
                         </div>
                     )}

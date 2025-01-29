@@ -4,7 +4,7 @@ import {
     BaseSetting, GroupSetting,
     InputSetting,
     SettingType,
-    ToggleDisplay,
+    ToggleDisplayType,
     ToggleSetting
 } from "~/components/settings/compositeSettings";
 import {DynamicForm} from "~/components/settings/greenMan/DynamicForm";
@@ -190,7 +190,7 @@ const SETTING_JSON_EXAMPLE = `[
     ]
   },
   {
-    "type": "ConditionalSetting",
+    "type": "ConditionalBool",
     "label": "Enable Advanced Options",
     "tooltip": "Toggle to show or hide advanced settings",
     "required": false,

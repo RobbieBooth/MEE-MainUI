@@ -1,4 +1,4 @@
-import {GroupSetting, ToggleDisplay, ToggleSetting} from "~/components/settings/compositeSettings";
+import {GroupSetting, ToggleDisplayType, ToggleSetting} from "~/components/settings/compositeSettings";
 import {Controller} from "react-hook-form";
 import {Checkbox} from "~/components/ui/checkbox";
 import {Switch} from "~/components/ui/switch";
@@ -29,11 +29,12 @@ export function SettingGroup({
     );
 }
 
-export function GroupTitle({label, tooltip}:{label: string, tooltip: string}) {
-    return <legend>
+export function GroupTitle({label, tooltip}:{label: string | null, tooltip: string | null}) {
+    return (label == null && tooltip == null ? null :
+        <legend>
         <div className="flex items-center">
-            <p className="mr-2">{label}</p>
-            <SettingTooltip tooltip={tooltip}/>
+            {label && <p className="mr-2">{label}</p>}
+            {tooltip && <SettingTooltip tooltip={tooltip}/>}
         </div>
-    </legend>;
+    </legend>);
 }

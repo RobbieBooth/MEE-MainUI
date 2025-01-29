@@ -84,7 +84,7 @@ export function SelectSettingComponent(
                             className="max-w-xs"
                         >
                             <MultiSelectorTrigger>
-                                <MultiSelectorInput placeholder={selectSetting.tooltip} />
+                                <MultiSelectorInput placeholder={selectSetting.tooltip == null ? undefined : selectSetting.tooltip} />
                             </MultiSelectorTrigger>
                             <MultiSelectorContent>
                                 <MultiSelectorList>
@@ -97,7 +97,7 @@ export function SelectSettingComponent(
                         )}
                     />
                 }
-                <SettingTooltip tooltip={selectSetting.tooltip}/>
+                {selectSetting.tooltip && <SettingTooltip tooltip={selectSetting.tooltip}/>}
             </div>
         </div>
     );

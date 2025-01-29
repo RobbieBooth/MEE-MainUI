@@ -3,7 +3,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { renderSetting } from "./renderSetting";
 import {Button} from "~/components/ui/button";
 import {
-    BaseSetting, ConditionalSelect, ConditionalSetting, GroupSetting, ListSetting,
+    BaseSetting, ConditionalSelectSetting, ConditionalBoolSetting, GroupSetting, ListSetting,
     parseSettings, SelectSetting,
     SettingType,
     ToggleSetting,
@@ -54,14 +54,14 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
                     const listSetting = baseSetting as ListSetting;
                     listSetting.children = updateSettingRecursively(ids, listSetting.children) as GroupSetting[];
                     return listSetting;
-                case SettingType.ConditionalSetting:
+                case SettingType.ConditionalBool:
                     // eslint-disable-next-line no-case-declarations
-                    let conditionalSetting = baseSetting as ConditionalSetting;
+                    let conditionalSetting = baseSetting as ConditionalBoolSetting;
                     conditionalSetting = updateBoolConditionalData(ids, conditionalSetting);
                     return conditionalSetting;
                 case SettingType.ConditionalSelect:
                     // eslint-disable-next-line no-case-declarations
-                    let conditionalSelect = baseSetting as ConditionalSelect;
+                    let conditionalSelect = baseSetting as ConditionalSelectSetting;
                     conditionalSelect = updateSelectConditionalData(ids, conditionalSelect);
                     return conditionalSelect
             }
@@ -69,7 +69,7 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
         })
     };
 
-    const updateBoolConditionalData = (ids: { [key: string]: any }, setting:ConditionalSetting)=> {
+    const updateBoolConditionalData = (ids: { [key: string]: any }, setting:ConditionalBoolSetting)=> {
         const newSetting = setting;
         const toggleSetting = newSetting.condition;
         if (toggleSetting.id in ids) {
@@ -83,7 +83,7 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
         return newSetting;
     }
 
-    const updateSelectConditionalData = (ids: { [p: string]: any }, conditionalSelect: ConditionalSelect) => {
+    const updateSelectConditionalData = (ids: { [p: string]: any }, conditionalSelect: ConditionalSelectSetting) => {
         const newSetting = conditionalSelect;
         const select = newSetting.condition;
         if (select.id in ids) {

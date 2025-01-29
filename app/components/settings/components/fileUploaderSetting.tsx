@@ -32,7 +32,7 @@ export function FileUploaderSetting({
         <div>
             <div className="inline-flex">
                 <label>{fileSetting.label}</label>
-                <SettingTooltip tooltip={fileSetting.tooltip}/>
+                {fileSetting.tooltip && <SettingTooltip tooltip={fileSetting.tooltip}/>}
             </div>
 
 

@@ -9,22 +9,22 @@ export enum SettingType {
     File = "File",
     Group = "Group",
     ListSetting = "ListSetting",
-    ConditionalSetting = "ConditionalSetting",
+    ConditionalBool = "ConditionalBool",
     ConditionalSelect = "ConditionalSelect",
 }
 
-export enum ToggleDisplay {
+export enum ToggleDisplayType {
     Checkbox= "Checkbox",
     Switch = "Switch",
 }
 
 // Interfaces
 export interface TooltipSetting {
-    tooltip: string;
+    tooltip: string | null;
 }
 
 export interface Name {
-    label: string;
+    label: string | null;
 }
 
 export interface BaseSetting extends TooltipSetting, Name {
@@ -38,7 +38,7 @@ export interface BaseSetting extends TooltipSetting, Name {
 export interface ToggleSetting extends BaseSetting {
     type: SettingType.Toggle;
     value: boolean;
-    display: ToggleDisplay;
+    display: ToggleDisplayType;
 }
 
 // Leaf: InputSetting
@@ -59,7 +59,7 @@ export interface SelectSetting extends BaseSetting {
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types
 //https://react-dropzone.js.org/#!/Accepting%20specific%20file%20types
-type AcceptType = {
+type FileAcceptType = {
     [key: string]: string[];
 };
 // Example usage:
@@ -73,7 +73,7 @@ type AcceptType = {
 export interface FileInputSetting extends BaseSetting {
     type: SettingType.File;
     files: File[];
-    fileTypesAllowed: AcceptType; // e.g., ".png,.jpg,.pdf" or "image/*"
+    fileTypesAllowed: FileAcceptType; // e.g., ".png,.jpg,.pdf" or "image/*"
     // allowMultipleFiles: boolean;
     maxFileCount: number;// default is 1 if more than that then we allow multiple files
     maxCumulativeFileSizeBytes: number;
@@ -97,14 +97,14 @@ export interface ListSetting extends BaseSetting {
 }
 
 // Composite: ConditionalSetting
-export interface ConditionalSetting extends BaseSetting {
-    type: SettingType.ConditionalSetting;
+export interface ConditionalBoolSetting extends BaseSetting {
+    type: SettingType.ConditionalBool;
     condition: ToggleSetting;
     group: GroupSetting;
 }
 
 // Multi select must be false as it selects one option from group
-export interface ConditionalSelect extends BaseSetting {
+export interface ConditionalSelectSetting extends BaseSetting {
     type: SettingType.ConditionalSelect;
     condition: SelectSetting; // The SelectSetting acts as the condition
     groups: Record<string, GroupSetting>; // A map where each key corresponds to a value in the SelectSetting, and the value is a GroupSetting
@@ -174,14 +174,14 @@ function castToBaseSetting(json: any): BaseSetting {
                 settingToAdd: json.settingToAdd,
             } as ListSetting;
 
-        case SettingType.ConditionalSetting:
+        case SettingType.ConditionalBool:
             return {
                 ...json,
                 id: settingUUID,
-                type: SettingType.ConditionalSetting,
+                type: SettingType.ConditionalBool,
                 condition: castToBaseSetting(json.condition) as ToggleSetting,
                 group: castToBaseSetting(json.group) as GroupSetting,
-            } as ConditionalSetting;
+            } as ConditionalBoolSetting;
         case SettingType.ConditionalSelect:
             return {
                 ...json,
@@ -252,14 +252,14 @@ export function updateSettingData(setting:BaseSetting, newValue:any) {
             const listOperations = (newValue || []) as SettingListOperation[];
 
             return updateListSettingValue(listSetting, listOperations);
-        case SettingType.ConditionalSetting:
+        case SettingType.ConditionalBool:
             // eslint-disable-next-line no-case-declarations
             // conditionalSetting.
             //everything should get done for us, toggle should get updated and so should children
-            return setting as ConditionalSetting;
+            return setting as ConditionalBoolSetting;
         case SettingType.ConditionalSelect:
             //everything should get done for us, select should get updated and so should group children
-            return setting as ConditionalSelect;
+            return setting as ConditionalSelectSetting;
         default:
             throw new Error(`Unknown setting type: ${setting.type}`);
     }

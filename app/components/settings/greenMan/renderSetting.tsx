@@ -1,8 +1,8 @@
 import React from "react";
 
 import {
-    BaseSetting, ConditionalSelect,
-    ConditionalSetting,
+    BaseSetting, ConditionalSelectSetting,
+    ConditionalBoolSetting,
     FileInputSetting,
     GroupSetting,
     InputSetting,
@@ -50,7 +50,7 @@ const renderSetting = (
                         maxLength={(setting as InputSetting).maxCharacters || undefined}
                         placeholder={setting.tooltip}
                     />
-                        <SettingTooltip tooltip={setting.tooltip}/>
+                        {setting.tooltip && <SettingTooltip tooltip={setting.tooltip}/>}
                     </div>
                 </div>
             );
@@ -83,15 +83,15 @@ const renderSetting = (
                 <SettingList control={control} key={setting.id} listSetting={listSetting} register={register} setValue={setValue} />
             );
 
-        case SettingType.ConditionalSetting:
+        case SettingType.ConditionalBool:
             // eslint-disable-next-line no-case-declarations
-            const conditionalSetting = setting as ConditionalSetting;
+            const conditionalSetting = setting as ConditionalBoolSetting;
             return (
                 <SettingConditionalBool key={setting.id} conditionalSetting={conditionalSetting} control={control} register={register} setValue={setValue}/>
             );
         case SettingType.ConditionalSelect:
             // eslint-disable-next-line no-case-declarations
-            const conditionalSelect = setting as ConditionalSelect;
+            const conditionalSelect = setting as ConditionalSelectSetting;
             return(
                 <SettingConditionalSelect conditionalSelect={conditionalSelect} control={control} register={register} setValue={setValue}/>
             );
