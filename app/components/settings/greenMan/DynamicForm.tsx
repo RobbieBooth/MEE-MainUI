@@ -52,7 +52,7 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
                 case SettingType.ListSetting:
                     // eslint-disable-next-line no-case-declarations
                     const listSetting = baseSetting as ListSetting;
-                    listSetting.children = updateSettingRecursively(ids, listSetting.children) as GroupSetting[];
+                    listSetting.children = updateSettingRecursively(ids, listSetting.children) as BaseSetting[];
                     return listSetting;
                 case SettingType.ConditionalBool:
                     // eslint-disable-next-line no-case-declarations
@@ -77,9 +77,9 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
             newSetting.condition = updateSettingData(toggleSetting, value) as ToggleSetting;
         }
 
-        const groupSetting = setting.group as GroupSetting;
-        groupSetting.children = updateSettingRecursively(ids, groupSetting.children);
-        newSetting.group = groupSetting;
+        // const groupSetting = setting.group as GroupSetting;
+        // groupSetting.children = updateSettingRecursively(ids, groupSetting.children);
+        newSetting.children = updateSettingRecursively(ids, [setting.children])[0];
         return newSetting;
     }
 
@@ -93,7 +93,7 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
 
         Object.entries(newSetting.groups).forEach(([key, group]) => {
             //It will recursively go through children by going per group
-            newSetting.groups[key] = updateSettingRecursively(ids, [group])[0] as GroupSetting;
+            newSetting.groups[key] = updateSettingRecursively(ids, [group])[0];
         });
 
         return newSetting;

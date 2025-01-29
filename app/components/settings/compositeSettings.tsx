@@ -88,26 +88,27 @@ export interface GroupSetting extends BaseSetting {
 // Composite: SettingList
 export interface ListSetting extends BaseSetting {
     type: SettingType.ListSetting;
-    children: GroupSetting[];
+    children: BaseSetting[];
     allowAddition: boolean;
     allowRemoval: boolean;
     maxAmount: number | null; // Null = no max
     minAmount: number | null; // Null = no min
-    settingToAdd: GroupSetting;
+    settingToAdd: BaseSetting;
 }
 
 // Composite: ConditionalSetting
 export interface ConditionalBoolSetting extends BaseSetting {
     type: SettingType.ConditionalBool;
     condition: ToggleSetting;
-    group: GroupSetting;
+    children: BaseSetting;
+    not: boolean | undefined;// it will not the condition - if undefined or false it will act as normal
 }
 
 // Multi select must be false as it selects one option from group
 export interface ConditionalSelectSetting extends BaseSetting {
     type: SettingType.ConditionalSelect;
     condition: SelectSetting; // The SelectSetting acts as the condition
-    groups: Record<string, GroupSetting>; // A map where each key corresponds to a value in the SelectSetting, and the value is a GroupSetting
+    groups: Record<string, BaseSetting>; // A map where each key corresponds to a value in the SelectSetting, and the value is a GroupSetting
 }
 
 function castToBaseSetting(json: any): BaseSetting {
@@ -175,13 +176,16 @@ function castToBaseSetting(json: any): BaseSetting {
             } as ListSetting;
 
         case SettingType.ConditionalBool:
+            console.log(json.not);
             return {
                 ...json,
                 id: settingUUID,
                 type: SettingType.ConditionalBool,
                 condition: castToBaseSetting(json.condition) as ToggleSetting,
-                group: castToBaseSetting(json.group) as GroupSetting,
+                children: castToBaseSetting(json.children) as BaseSetting,
+                not: json.not,
             } as ConditionalBoolSetting;
+
         case SettingType.ConditionalSelect:
             return {
                 ...json,
@@ -191,7 +195,7 @@ function castToBaseSetting(json: any): BaseSetting {
                 groups: Object.fromEntries(
                     Object.entries(json.groups).map(([key, group]) => [
                         key,
-                        castToBaseSetting(group) as GroupSetting,
+                        castToBaseSetting(group) as BaseSetting,
                     ])
                 ),
             }
@@ -272,7 +276,7 @@ function updateListSettingValue(setting:ListSetting, operations:SettingListOpera
     // }
 
     //Operation to make request operations more effective
-    const childrenMap = new Map<string, GroupSetting>();
+    const childrenMap = new Map<string, BaseSetting>();
     setting.children.forEach((child)=>{
         childrenMap.set(child.id, child);
     });

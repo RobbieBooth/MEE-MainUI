@@ -374,6 +374,67 @@ const SETTING_JSON_EXAMPLE = `[
 
   ]`;
 
+const testSetting = `
+[
+  {
+    "type": "ConditionalBool",
+    "label": "Allow Outside Requests",
+    "tooltip": "Allow requests from other websites to the application",
+    "required": true,
+    "disabled": false,
+    "condition": {
+      "type": "Toggle",
+      "tooltip": "Allow requests from other websites to the application",
+      "label": "Enable Outside Requests",
+      "required": true,
+      "disabled": false,
+      "value": false,
+      "display": "Switch"
+    },
+    "children": {
+      "type": "ConditionalBool",
+      "tooltip": null,
+      "label": null,
+      "required": true,
+      "disabled": false,
+      "not": true,
+      "condition": {
+        "type": "Toggle",
+        "tooltip": "Allow all requests from external website",
+        "label": "Allow All Requests",
+        "required": true,
+        "disabled": false,
+        "value": false,
+        "display": "Checkbox"
+      },
+      "children": {
+        "type": "ListSetting",
+        "tooltip": "Define the website urls allowed to make requests for these questions",
+        "label": "Define allowed URLS",
+        "required": false,
+        "disabled": false,
+        "allowAddition": true,
+        "allowRemoval": true,
+        "maxAmount": null,
+        "minAmount": null,
+        "children": [],
+        "settingToAdd":
+        {
+          "type": "Input",
+          "tooltip": "The website/URL allowed to make the request",
+          "label": "Website URL",
+          "required": true,
+          "disabled": false,
+          "value": "",
+          "maxCharacters": null,
+          "maxLines": "1"
+        }
+
+      }
+    }
+  }
+]`;
+
 export default function test(){
-    return <DynamicForm settings={SETTING_JSON_EXAMPLE} />;
+    return <DynamicForm settings={testSetting} />;
 }

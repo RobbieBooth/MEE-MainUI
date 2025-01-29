@@ -21,6 +21,17 @@ export function SettingConditionalBool({
         setToggleSettings(conditionalSetting.condition);
     }, [conditionalSetting.condition]);
 
+    function renderChildren(){
+        const useNot = conditionalSetting.not !== undefined && conditionalSetting.not === true;
+        const shouldRender = useNot ? !toggleSettings.value : toggleSettings.value;
+        // console.log(conditionalSetting.not);
+
+        if (shouldRender) {
+            return renderSetting(conditionalSetting.children, control, register, setValue);
+        }
+        return null;
+    }
+
     return (
         <fieldset key={conditionalSetting.id} className="space-x-3 space-y-0 rounded-md border p-4">
             <GroupTitle label={conditionalSetting.label} tooltip={conditionalSetting.tooltip}/>
@@ -31,9 +42,15 @@ export function SettingConditionalBool({
                     value: bool,  // Update the specific property (e.g., `value`) with the new boolean value
                 }));
             }} />
-            {toggleSettings.value &&
-                    renderSetting(conditionalSetting.group, control, register, setValue)
-                }
+            {/*Nots the condition if it is defined*/}
+            {/*{conditionalSetting.not != undefined && (conditionalSetting.not && !toggleSettings.value)?*/}
+            {/*    (!toggleSettings.value &&*/}
+            {/*        renderSetting(conditionalSetting.children, control, register, setValue))*/}
+            {/*    :*/}
+            {/*    (toggleSettings.value &&*/}
+            {/*        renderSetting(conditionalSetting.children, control, register, setValue))*/}
+            {/*    }*/}
+            {renderChildren()}
         </fieldset>
     );
 }
