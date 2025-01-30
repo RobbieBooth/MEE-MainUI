@@ -111,8 +111,60 @@ export interface ConditionalSelectSetting extends BaseSetting {
     groups: Record<string, BaseSetting>; // A map where each key corresponds to a value in the SelectSetting, and the value is a GroupSetting
 }
 
-function castToBaseSetting(json: any): BaseSetting {
-    const settingUUID = uuidv4();
+/**
+ * Used when you would like to change the ids of a BaseSetting and all of its children's ids.
+ * @param baseSetting setting to update ids
+ * @returns BaseSetting the setting with the updated ids
+ */
+export function recursivelyUpdateBaseSettingID(baseSetting:BaseSetting):BaseSetting {
+    switch (baseSetting.type) {
+        //Update Leafs
+        case SettingType.Toggle:
+        case SettingType.Input:
+        case SettingType.Select:
+        case SettingType.File:
+            baseSetting.id = uuidv4();
+            return baseSetting;
+
+            //Update composites:
+        case SettingType.Group:
+            // eslint-disable-next-line no-case-declarations
+            const group = baseSetting as GroupSetting;
+            group.children = group.children.map(recursivelyUpdateBaseSettingID);
+            group.id = uuidv4();
+            return group;
+        case SettingType.ListSetting:
+            // eslint-disable-next-line no-case-declarations
+            const listSetting = baseSetting as ListSetting;
+            listSetting.children = listSetting.children.map(recursivelyUpdateBaseSettingID);
+            listSetting.settingToAdd = recursivelyUpdateBaseSettingID(listSetting.settingToAdd);
+            listSetting.id = uuidv4();
+            return listSetting;
+        case SettingType.ConditionalBool:
+            // eslint-disable-next-line no-case-declarations
+            const conditionalBool = baseSetting as ConditionalBoolSetting;
+            conditionalBool.children = recursivelyUpdateBaseSettingID(conditionalBool.children);
+            conditionalBool.condition = recursivelyUpdateBaseSettingID(conditionalBool.condition) as ToggleSetting;
+            conditionalBool.id = uuidv4();
+            return conditionalBool;
+        case SettingType.ConditionalSelect:
+            // eslint-disable-next-line no-case-declarations
+            const conditionalSelectSetting = baseSetting as ConditionalSelectSetting;
+            conditionalSelectSetting.condition = recursivelyUpdateBaseSettingID(conditionalSelectSetting.condition) as SelectSetting;
+            conditionalSelectSetting.groups = Object.fromEntries(
+                Object.entries(conditionalSelectSetting.groups).map(([key, setting]) => [
+                    key,
+                    recursivelyUpdateBaseSettingID(setting),
+                ])
+            );
+            conditionalSelectSetting.id = uuidv4();
+            return conditionalSelectSetting;
+    }
+    throw Error(`Unknown Type for updating ids on setting: \`${baseSetting.type}\``);
+}
+
+export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
+    const settingUUID = settingID ?? uuidv4();//Use id if its specified
     switch (json.type) {
         case SettingType.Toggle:
             return {
@@ -176,7 +228,6 @@ function castToBaseSetting(json: any): BaseSetting {
             } as ListSetting;
 
         case SettingType.ConditionalBool:
-            console.log(json.not);
             return {
                 ...json,
                 id: settingUUID,
@@ -210,7 +261,7 @@ export function parseSettings(jsonInput: string): BaseSetting[] {
         if (!Array.isArray(parsed)) {
             throw new Error("Input JSON must be an array of settings");
         }
-        return parsed.map(castToBaseSetting);
+        return parsed.map((item) => castToBaseSetting(item));
     } catch (error) {
         console.error("Failed to parse settings:", error);
         throw error;

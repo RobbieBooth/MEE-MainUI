@@ -1,4 +1,9 @@
-import {GroupSetting, ListSetting} from "~/components/settings/compositeSettings";
+import {
+    BaseSetting,
+    GroupSetting,
+    ListSetting,
+    recursivelyUpdateBaseSettingID
+} from "~/components/settings/compositeSettings";
 
 import React, {useEffect, useState} from "react";
 import {renderSetting} from "~/components/settings/greenMan/renderSetting";
@@ -30,7 +35,7 @@ export function SettingList({
     setValue: any,
 }): JSX.Element {
     //bad way to do it but seems like only way to stop constant re-renders 
-    const [allChildren, setAllChildren] = useState<GroupSetting[]>([]);
+    const [allChildren, setAllChildren] = useState<BaseSetting[]>([]);
     const [operationsPerformed, setOperationsPerformed] = useState<SettingListOperation[]>([]);//pass the operations to the component at the end and have it work through them
 
     useEffect(()=>{
@@ -47,13 +52,16 @@ export function SettingList({
     function addComponent(field:(...event: any[]) => void) {
         const id = uuidv4();
         // Create a deep copy of the object
-        const newComponent = JSON.parse(JSON.stringify(listSetting.settingToAdd));
-        newComponent.id = id;
+        let newComponent = JSON.parse(JSON.stringify(listSetting.settingToAdd));
+        newComponent = recursivelyUpdateBaseSettingID(newComponent);
+        newComponent.id = id;//we want to set our own id in this case for the newOperation updates:
         const newOperationsArray = [...operationsPerformed, {id:id, operation:Operations.Add}];
         field(newOperationsArray);
         setOperationsPerformed(newOperationsArray);
         setAllChildren([...allChildren, newComponent]);
     }
+
+
 
     return (
         <Controller
@@ -64,7 +72,7 @@ export function SettingList({
         <fieldset key={listSetting.id} className="space-x-3 space-y-0 rounded-md border p-4">
             <GroupTitle label={listSetting.label} tooltip={listSetting.tooltip} />
 
-            <div className="flex flex-wrap gap-3"> {/* Use flexbox with gap for consistent spacing */}
+            <div className="flex flex-wrap gap-3" key={listSetting.id}> {/* Use flexbox with gap for consistent spacing */}
                 {allChildren.map((childSetting) => (
                     renderSetting(childSetting, control, register, setValue)
                 ))}
