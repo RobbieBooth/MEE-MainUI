@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 
 import {
     BaseSetting, GroupSetting,
@@ -8,6 +8,7 @@ import {
     ToggleSetting
 } from "~/components/settings/compositeSettings";
 import {DynamicForm} from "~/components/settings/greenMan/DynamicForm";
+import {useParams} from "@remix-run/react";
 
 // const settings: BaseSetting[] = [
 //     {
@@ -435,6 +436,22 @@ const testSetting = `
   }
 ]`;
 
-export default function test(){
-    return <DynamicForm settings={testSetting} />;
+export default function SettingPage(){
+    const params = useParams();
+    const [setting, setSetting] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (params.settingUUID !== undefined) {
+            setSetting(params.settingUUID ?? null);
+            setLoading(false); // Mark loading as complete when params is ready
+        }
+    }, [params]);
+
+    // Prevent rendering until params are fully loaded
+    if (loading) {
+        return null; // Or a loading indicator if needed
+    }
+
+    return <DynamicForm settings={setting} />;
 }

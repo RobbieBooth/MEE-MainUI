@@ -65,7 +65,7 @@ function createQuizSettings(json:any):QuizSettings {
 
 }
 
-export const DynamicForm = ({ settings }: { settings: string }) => {
+export const DynamicForm = ({ settings }: { settings: string | null}) => {
     const [baseSettings, setBaseSettings] = useState<BaseSetting[]>([]);
     const [quizSetting, setQuizSetting] = useState<BaseSetting[]>([]);
     const [questionSetting, setQuestionSetting] = useState<BaseSetting[]>([]);
@@ -262,7 +262,7 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
     //     setBaseSettings(parseSettings(settings));
     // }, [settings]);
     useEffect(() => {
-        fetchSettingsByQuizId(null);
+        fetchSettingsByQuizId(settings);
     }, [settings]);
 
 
