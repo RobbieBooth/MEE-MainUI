@@ -21,6 +21,11 @@ import {v4 as uuidv4} from "uuid";
 type ModuleName = string;
 type UUID = string;
 
+interface Tuple {
+    first: ModuleName;
+    second:BaseSetting;
+}
+
 interface QuizSettings {
     quizUUID: UUID;
     currentVersionUUID: UUID;
@@ -68,6 +73,30 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
         try {
             const response = await fetch(`http://localhost:8080/v1/api/setting/${QuizID ?? ""}`, {
                 method: "GET", // or 'POST', 'PUT', 'DELETE', etc.
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data:QuizSettings = createQuizSettings(await response.json());
+            setQuizSettingsHolder(data);
+            setQuizSetting([data.quizSetting]);
+            setQuestionSetting([createQuestionSetting(data)]);
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "An unknown error occurred");
+            setQuizSettingsHolder(undefined); // Clear previous student data
+        }
+    };
+
+    const saveQuizSettings = async (quizSettings: QuizSettings) => {
+        try {
+            const response = await fetch("http://localhost:8080/v1/api/setting/save", {
+                method: "POST",
+                body: JSON.stringify(quizSettings),
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -146,10 +175,78 @@ export const DynamicForm = ({ settings }: { settings: string }) => {
 
     const onSubmit = (data: any) => {
         console.log("Form Submitted:", data);
-        const newSettings = updateSettingRecursively(data, baseSettings);
-        console.log(newSettings);
-        setBaseSettings(newSettings);
+        const reconstructedQuizSettings = reconstructQuizSettingsHolder(data);
+
+        saveQuizSettings(reconstructedQuizSettings);
     };
+
+    function isListSetting(obj: any): obj is ListSetting {
+        return obj && obj.type === SettingType.ListSetting && Array.isArray(obj.children);
+    }
+
+
+    /**
+     * Gets the value of the select and the associated `BaseSetting` - if either are null then null is returned
+     * @param conditional The ConditionalSelectSetting that has the settings extracted
+     */
+    function getConditionalValueAndSetting(conditional: ConditionalSelectSetting): { moduleName: ModuleName; setting: BaseSetting, id: UUID } | null {
+        const conditionalValue = conditional.condition.value;
+        if (!conditionalValue || conditionalValue.length === 0) {
+            return null;
+        }
+
+        // Get the corresponding BaseSetting from the groups record
+        const matchedSetting =  conditional.groups[conditionalValue[0]] ?? null;
+        if (!matchedSetting) {
+            return null;
+        }
+
+
+        return { moduleName: conditionalValue[0], setting: matchedSetting, id: conditional.id };
+    }
+
+
+    const reconstructQuizSettingsHolder = (data:any) =>{
+        const newQuizSettings =  updateSettingRecursively(data, quizSetting);
+        const newQuestionList = updateSettingRecursively(data, questionSetting);
+
+        if(quizSettingsHolder == null){
+            throw Error("Previous Quiz Holder is null");
+        }
+        //it should never get to this point but newQuestionSettings should have a single list element holding all the questions
+        if(newQuestionList.length === 0 || !isListSetting(newQuestionList[0])){
+            throw Error("Incorrect Question type");
+        }
+
+        //These are the new questions
+        const newQuestionsSettings = (newQuestionList[0] as ListSetting).children;
+        const questionList:Record<UUID, [ModuleName, BaseSetting]> = {};
+        newQuestionsSettings.forEach((value) => {
+            const values = getConditionalValueAndSetting(value as ConditionalSelectSetting);
+            //Skip as its null/unassigned setting
+            if(values === null){
+                return;
+            }
+            questionList[values!.id] = [values!.moduleName, values!.setting];
+        });
+        const newQuestions:[ModuleName, BaseSetting][] = [];
+        const previousQuestions:Record<UUID, [ModuleName, BaseSetting]> = {}
+        Object.entries(questionList).forEach(([key, value]) => {
+            if(quizSettingsHolder.questions[key]){
+                previousQuestions[key] = value;
+            }else{
+                newQuestions.push(value);
+            }
+        });
+        const newQuizSettingHolder:QuizSettings = {
+            ...quizSettingsHolder,
+            quizSetting: newQuizSettings[0],
+            newQuestions: newQuestions,
+            questions: previousQuestions,
+        }
+
+        return newQuizSettingHolder;
+    }
 
     const onFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault(); // Prevent the default form submission behavior

@@ -1,8 +1,8 @@
 import {
-    BaseSetting,
+    BaseSetting, ConditionalBoolSetting, ConditionalSelectSetting,
     GroupSetting,
-    ListSetting,
-    recursivelyUpdateBaseSettingID
+    ListSetting, recursivelyGetIDs,
+    recursivelyUpdateBaseSettingID, SettingType
 } from "~/components/settings/compositeSettings";
 
 import React, {useEffect, useState} from "react";
@@ -19,8 +19,14 @@ export enum Operations {
     Remove
 }
 export interface SettingListOperation {
-    id: string;
+    id: IDStore;
     operation: Operations;
+}
+
+export interface IDStore{
+    id: string;
+    children: IDStore[];
+    conditional?: IDStore;
 }
 
 export function SettingList({
@@ -46,22 +52,20 @@ export function SettingList({
     function removeComponent(id: string) {
         const newAllChildren = allChildren.filter(child => child.id !== id);
         setAllChildren(newAllChildren);
-        setOperationsPerformed((prev) => [...prev, {id:id, operation:Operations.Remove}]);
+        setOperationsPerformed((prev) => [...prev, {id:{id:id, children:[]}, operation:Operations.Remove}]);
     }
     
     function addComponent(field:(...event: any[]) => void) {
-        const id = uuidv4();
+
         // Create a deep copy of the object
         let newComponent = JSON.parse(JSON.stringify(listSetting.settingToAdd));
         newComponent = recursivelyUpdateBaseSettingID(newComponent);
-        newComponent.id = id;//we want to set our own id in this case for the newOperation updates:
-        const newOperationsArray = [...operationsPerformed, {id:id, operation:Operations.Add}];
+        const ids = recursivelyGetIDs(newComponent);//terrible way to get all the ids - if it wasn't for the thousands of updates problem for updating individually this would never be here.
+        const newOperationsArray = [...operationsPerformed, {id:ids, operation:Operations.Add}];
         field(newOperationsArray);
         setOperationsPerformed(newOperationsArray);
         setAllChildren([...allChildren, newComponent]);
     }
-
-
 
     return (
         <Controller

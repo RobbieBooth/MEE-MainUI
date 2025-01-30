@@ -1,6 +1,6 @@
 // Enums
 import {v4 as uuidv4} from "uuid";
-import {Operations, SettingListOperation} from "~/components/settings/components/settingList";
+import {IDStore, Operations, SettingListOperation} from "~/components/settings/components/settingList";
 
 export enum SettingType {
     Toggle = "Toggle",
@@ -336,22 +336,99 @@ function updateListSettingValue(setting:ListSetting, operations:SettingListOpera
     // const removeOperations = operations.filter((value) => value.operation === Operations.Remove);
     operations.forEach((value) =>{
         if(value.operation === Operations.Add){
-            if(childrenMap.has(value.id)){
+            if(childrenMap.has(value.id.id)){
                 return;
             }
 
             const newComponent = JSON.parse(JSON.stringify(setting.settingToAdd));
-            newComponent.id = value.id;
+            recursivelySetIDs(newComponent, value.id);
             childrenMap.set(newComponent.id, newComponent);
             return;
         }
 
         if(value.operation === Operations.Remove){
-            childrenMap.delete(value.id);
+            childrenMap.delete(value.id.id);
             return;
         }
     });
 
     setting.children = Array.from(childrenMap.values());
     return setting;
+}
+
+export function recursivelySetIDs(baseSetting: BaseSetting, idStore: IDStore): void {
+    baseSetting.id = idStore.id;
+    switch (baseSetting.type) {
+        case SettingType.Toggle:
+        case SettingType.Input:
+        case SettingType.Select:
+        case SettingType.File:
+            return;
+        case SettingType.Group:
+            // eslint-disable-next-line no-case-declarations
+            const groupSetting = baseSetting as GroupSetting;
+            groupSetting.children.forEach((child, index) => recursivelySetIDs(child, idStore.children[index]));
+            return;
+        case SettingType.ListSetting:
+            // eslint-disable-next-line no-case-declarations
+            const listSetting = baseSetting as ListSetting;
+            listSetting.children.forEach((child, index) => recursivelySetIDs(child, idStore.children[index]));
+            return;
+        case SettingType.ConditionalBool:
+            // eslint-disable-next-line no-case-declarations
+            const conditionalBool = baseSetting as ConditionalBoolSetting;
+            recursivelySetIDs(conditionalBool.children, idStore.children[0]);
+            if (idStore.conditional) {
+                recursivelySetIDs(conditionalBool.condition, idStore.conditional);
+            }
+            return;
+        case SettingType.ConditionalSelect:
+            // eslint-disable-next-line no-case-declarations
+            const conditionalSelectSetting = baseSetting as ConditionalSelectSetting;
+            Object.values(conditionalSelectSetting.groups).forEach((value, index) => {
+                recursivelySetIDs(value, idStore.children[index]);
+            });
+            if (idStore.conditional) {
+                recursivelySetIDs(conditionalSelectSetting.condition, idStore.conditional);
+            }
+            return;
+    }
+}
+
+/**
+ * Very annoying side effect of creating all the new ids is it has broke the logic of the project so this is used to get all of the ids and update them upon submission.
+ */
+export function recursivelyGetIDs(baseSetting:BaseSetting):IDStore {
+    let childIds = [];
+    let conditionalId = undefined;
+    switch(baseSetting.type) {
+        case SettingType.Toggle:
+        case SettingType.Input:
+        case SettingType.Select:
+        case SettingType.File:
+            return {children: [], id: baseSetting.id};
+        case SettingType.Group:
+            // eslint-disable-next-line no-case-declarations
+            const groupSetting = baseSetting as GroupSetting;
+            childIds = groupSetting.children.map(recursivelyGetIDs);
+            return {id: groupSetting.id, children: childIds};
+        case SettingType.ListSetting:
+            // eslint-disable-next-line no-case-declarations
+            const listSetting = baseSetting as ListSetting;
+            childIds = listSetting.children.map(recursivelyGetIDs);
+            return {id: listSetting.id, children: childIds};
+        case SettingType.ConditionalBool:
+            // eslint-disable-next-line no-case-declarations
+            const conditionalBool = baseSetting as ConditionalBoolSetting;
+            childIds = [recursivelyGetIDs(conditionalBool.children)];
+            conditionalId = recursivelyGetIDs(conditionalBool.condition);
+            return {id: conditionalBool.id, children: childIds, conditional: conditionalId};
+        case SettingType.ConditionalSelect:
+            // eslint-disable-next-line no-case-declarations
+            const conditionalSelectSetting = baseSetting as ConditionalSelectSetting;
+            childIds = Object.values(conditionalSelectSetting.groups).map((value) => recursivelyGetIDs(value));
+            conditionalId = recursivelyGetIDs(conditionalSelectSetting.condition);
+            return {id: conditionalSelectSetting.id, children: childIds, conditional: conditionalId};
+
+    }
 }
