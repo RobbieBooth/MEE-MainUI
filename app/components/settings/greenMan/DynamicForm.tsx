@@ -73,6 +73,7 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
     const [error, setError] = useState<string | null>(null);
     const methods = useForm();
     const { handleSubmit, control, register, setValue } = methods;
+    const [loading, setLoading] = useState(true);
 
     const fetchSettingsByQuizId = async (QuizID:string|null) => {
         try {
@@ -84,6 +85,9 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             });
 
             if (!response.ok) {
+                if(response.status === 404) {
+                    throw new Error(`Quiz by ID ${QuizID} not found.`);
+                }
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
@@ -95,6 +99,7 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             setError(error instanceof Error ? error.message : "An unknown error occurred");
             setQuizSettingsHolder(undefined); // Clear previous student data
         }
+        setLoading(false);
     };
 
     const saveQuizSettings = async (quizSettings: QuizSettings) => {
@@ -333,10 +338,21 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
         return newSetting;
     };
 
+    if(loading){
+        return null;
+    }
+
+    if(error){
+        return (
+            <div className="space-y-8 max-w-3xl mx-auto py-10 min-h-screen">
+                {createSettingTitle("An Error Occurred", error)}
+            </div>
+        );
+    }
 
     return (
         <FormProvider {...methods}>
-            <form onSubmit={onFormSubmit} className="space-y-8 max-w-3xl mx-auto py-10">
+            <form onSubmit={onFormSubmit} className="space-y-8 max-w-3xl mx-auto py-10 min-h-screen">
                 {createSettingTitle("Quiz Settings", "The settings for the quiz.")}
                 {quizSetting.map((baseSetting) =>
                     renderSetting(baseSetting, control, register, setValue)
