@@ -17,7 +17,6 @@ import {
 import {Separator} from "~/components/ui/separator"; // Import the utility function
 import {v4 as uuidv4} from "uuid";
 
-
 type ModuleName = string;
 type UUID = string;
 
@@ -95,6 +94,10 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             setQuizSettingsHolder(data);
             setQuizSetting([data.quizSetting]);
             setQuestionSetting([createQuestionSetting(data)]);
+            //Change the page url to having the new quizUUID without causing a rerender and getting the setting again.
+            //This will cut request time by half theoretically.
+            //This also allows us, once the quiz has been saved, to reload and get the quiz we were editing instead of a completely new one.
+            window.history.replaceState(null, "Settings Page", `/setting/${data.quizUUID}`);
         } catch (error) {
             setError(error instanceof Error ? error.message : "An unknown error occurred");
             setQuizSettingsHolder(undefined); // Clear previous student data
