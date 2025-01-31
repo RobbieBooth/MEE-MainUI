@@ -11,6 +11,10 @@ export enum SettingType {
     ListSetting = "ListSetting",
     ConditionalBool = "ConditionalBool",
     ConditionalSelect = "ConditionalSelect",
+
+    //Cosmetic not used
+    Description = "Description",
+    Error = "Error"
 }
 
 export enum ToggleDisplayType {
@@ -32,6 +36,24 @@ export interface BaseSetting extends TooltipSetting, Name {
     required: boolean;
     disabled: boolean;
     id: string;//Only for form unique elements etc - gets assigned by front end
+}
+
+/**
+ * Used when an error has occurred - does not get saved to settings
+ */
+export interface ErrorSetting extends BaseSetting {
+    type: SettingType.Error;
+    title: string | null;
+    value: string;//error
+}
+
+/**
+ * Used to describe a setting - it is not intended to be used as an actual setting
+ */
+export interface DescriptionSetting extends BaseSetting {
+    type: SettingType.Description;
+    title: string | null;
+    value: string | null;//error
 }
 
 // Leaf: ToggleSetting
@@ -123,10 +145,12 @@ export function recursivelyUpdateBaseSettingID(baseSetting:BaseSetting):BaseSett
         case SettingType.Input:
         case SettingType.Select:
         case SettingType.File:
+        case SettingType.Error:
+        case SettingType.Description:
             baseSetting.id = uuidv4();
             return baseSetting;
 
-            //Update composites:
+        //Update composites:
         case SettingType.Group:
             // eslint-disable-next-line no-case-declarations
             const group = baseSetting as GroupSetting;
@@ -160,7 +184,7 @@ export function recursivelyUpdateBaseSettingID(baseSetting:BaseSetting):BaseSett
             conditionalSelectSetting.id = uuidv4();
             return conditionalSelectSetting;
     }
-    throw Error(`Unknown Type for updating ids on setting: \`${baseSetting.type}\``);
+    // throw Error(`Unknown Type for updating ids on setting: \`${baseSetting.type}\``);
 }
 
 export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
@@ -205,7 +229,22 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 allowMultipleFiles: json.allowMultipleFiles,
                 maxCumulativeFileSizeBytes: json.maxCumulativeFileSizeBytes,
             } as FileInputSetting;
-
+        case SettingType.Error:
+            return{
+                ...json,
+                id: settingUUID,
+                type: SettingType.Error,
+                title: json.title,
+                value: json.value,
+            } as ErrorSetting;
+        case SettingType.Description:
+            return{
+                ...json,
+                id: settingUUID,
+                type: SettingType.Description,
+                title: json.title,
+                value: json.value,
+            } as DescriptionSetting;
         case SettingType.Group:
             return {
                 ...json,
@@ -315,6 +354,10 @@ export function updateSettingData(setting:BaseSetting, newValue:any) {
         case SettingType.ConditionalSelect:
             //everything should get done for us, select should get updated and so should group children
             return setting as ConditionalSelectSetting;
+            //We don't need to update error or description so just return setting
+        case SettingType.Error:
+        case SettingType.Description:
+            return setting;
         default:
             throw new Error(`Unknown setting type: ${setting.type}`);
     }
@@ -363,6 +406,8 @@ export function recursivelySetIDs(baseSetting: BaseSetting, idStore: IDStore): v
         case SettingType.Input:
         case SettingType.Select:
         case SettingType.File:
+        case SettingType.Description:
+        case SettingType.Error:
             return;
         case SettingType.Group:
             // eslint-disable-next-line no-case-declarations
@@ -406,6 +451,8 @@ export function recursivelyGetIDs(baseSetting:BaseSetting):IDStore {
         case SettingType.Input:
         case SettingType.Select:
         case SettingType.File:
+        case SettingType.Description:
+        case SettingType.Error:
             return {children: [], id: baseSetting.id};
         case SettingType.Group:
             // eslint-disable-next-line no-case-declarations

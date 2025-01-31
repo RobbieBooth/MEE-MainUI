@@ -9,7 +9,7 @@ import {
     ListSetting,
     SelectSetting,
     SettingType,
-    ToggleSetting
+    ToggleSetting, DescriptionSetting, ErrorSetting
 } from "~/components/settings/compositeSettings";
 import {Input} from "~/components/ui/input";
 import {Toggle} from "~/components/settings/components/toggle";
@@ -20,6 +20,7 @@ import {SettingGroup} from "~/components/settings/components/settingGroup";
 import {SettingList} from "~/components/settings/components/settingList";
 import {SettingConditionalBool} from "~/components/settings/components/settingConditionalBool";
 import {SettingConditionalSelect} from "~/components/settings/components/settingConditionalSelect";
+import {createSettingTitle} from "~/components/settings/greenMan/DynamicForm";
 
 const renderSetting = (
     setting: BaseSetting,
@@ -95,6 +96,27 @@ const renderSetting = (
             return(
                 <SettingConditionalSelect conditionalSelect={conditionalSelect} control={control} register={register} setValue={setValue}/>
             );
+        case SettingType.Description:
+            // eslint-disable-next-line no-case-declarations
+            const descriptionSetting = setting as DescriptionSetting;
+            return (
+                createSettingTitle(descriptionSetting.title ?? undefined, descriptionSetting.value ?? undefined)
+            );
+        case SettingType.Error:
+            // eslint-disable-next-line no-case-declarations
+            const errorSetting = setting as ErrorSetting;
+            //Same as createSettingTitle but red for error as title
+            return (
+                <div className="space-y-1">
+                    <h3 className="text-lg font-medium leading-none accent-red-600">{`Error${errorSetting.title ? `:${errorSetting.title}` : ""}`}</h3>
+                    {errorSetting.value &&
+                        <p className="text-base text-muted-foreground">
+                            {errorSetting.value}
+                        </p>
+                    }
+                </div>
+            );
+
         default:
             return null;
     }

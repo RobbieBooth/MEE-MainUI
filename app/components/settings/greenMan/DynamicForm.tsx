@@ -242,6 +242,8 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             }
             questionList[values!.id] = [values!.moduleName, values!.setting];
         });
+
+
         const newQuestions:Tuple[] = [];
         const previousQuestions:Record<UUID, Tuple> = {}
         Object.entries(questionList).forEach(([key, value]) => {
@@ -271,11 +273,17 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
     // }, [settings]);
     useEffect(() => {
         fetchSettingsByQuizId(settings);
-    }, [settings]);
+    }, [fetchSettingsByQuizId, settings]);
 
 
+    /**
+     * Recursively updates all of the settings. It also removes the error setting
+     * @param ids
+     * @param settings
+     */
     const updateSettingRecursively = (ids: { [key: string]: any }, settings:BaseSetting[])=> {
-        return settings.map((setting) =>{
+        return settings.filter(setting => setting.type !== SettingType.Error)//Remove the error ones then do all updates
+            .map((setting) =>{
             let baseSetting = setting;
             const id = baseSetting.id;
             //big o of o(1) since has table
@@ -371,11 +379,11 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
     );
 };
 
-function createSettingTitle(title:string, description?:string) {
+export function createSettingTitle(title?:string, description?:string) {
     return <div className="space-y-1">
-        <h3 className="text-lg font-medium leading-none">{title}</h3>
+        {title && <h3 className="text-lg font-medium leading-none">{title}</h3>}
         {description &&
-        <p className="text-base text-muted-foreground">
+            <p className="text-base text-muted-foreground">
             {description}
         </p>
         }
