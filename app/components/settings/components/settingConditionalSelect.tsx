@@ -27,6 +27,7 @@ export function SettingConditionalSelect({
 }): JSX.Element {
     const [selectSetting, setSelectSettings] = useState<SelectSetting>(conditionalSelect.condition);
 
+
     useEffect(() => {
         setSelectSettings(conditionalSelect.condition);
     }, [conditionalSelect.condition]);

@@ -49,11 +49,14 @@ export function SettingList({
         setOperationsPerformed([]);
     }, [listSetting.children]);
 
-    function removeComponent(id: string) {
+    function removeComponent(field:(...event: any[]) => void, id:string) {
         const newAllChildren = allChildren.filter(child => child.id !== id);
+        const newOperationsArray = [...operationsPerformed, {id:{id:id, children:[]}, operation:Operations.Remove}];
+        field(newOperationsArray);
+        setOperationsPerformed(newOperationsArray);
         setAllChildren(newAllChildren);
-        setOperationsPerformed((prev) => [...prev, {id:{id:id, children:[]}, operation:Operations.Remove}]);
     }
+
     
     function addComponent(field:(...event: any[]) => void) {
 
@@ -77,9 +80,13 @@ export function SettingList({
             <GroupTitle label={listSetting.label} tooltip={listSetting.tooltip} />
 
             <div className="flex flex-wrap gap-3" key={listSetting.id}> {/* Use flexbox with gap for consistent spacing */}
-                {allChildren.map((childSetting) => (
-                    renderSetting(childSetting, control, register, setValue)
-                ))}
+                {allChildren.map((childSetting, index) => (
+                    <div key={childSetting.id} style={{display: "flex", alignItems: "center", gap: "10px"}}>
+                        {renderSetting(childSetting, control, register, setValue)}
+                        <button onClick={() => removeComponent(field.onChange, childSetting.id)}>Remove</button>
+                    </div>
+
+                    ))}
                 <Button
                     type="button"
                     onClick={() => {
