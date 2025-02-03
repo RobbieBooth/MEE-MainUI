@@ -3,6 +3,7 @@ import { useStompWithSend } from "~/components/hooks/stompMessageHook";
 import {QuizTable} from "~/components/quizSection/quizDisplayPage";
 import {StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
 import { useNavigate } from "@remix-run/react";
+import {Button} from "~/components/ui/button";
 
 type Student = {
     studentUUID: string;
@@ -92,8 +93,10 @@ export default function StudentPage() {
                     <h1>Viewing Student with id: {student.studentUUID}</h1>
                     <QuizTable tableTitle={"Quiz Questions"} uuids={student.availableQuiz} buttonTitle={"Start Quiz"} buttonClickFunction={(quizUUID:string) => {createStudentQuizAttempt(student.studentUUID, quizUUID)}}/>
                     <QuizTable tableTitle={"Student Quiz Attempts"} uuids={student.attemptedQuiz} buttonTitle={"Open Quiz"} buttonClickFunction={openQuiz}/>
+                    <Button onClick={() => navigate("/setting")}>Create Quiz</Button>
                 </div>
             )}
+
 
         </div>
     );

@@ -105,6 +105,27 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
         setLoading(false);
     };
 
+    //TODO Temporary REMOVE AFTER DEMO
+    const saveQuizToStudent = async (quizSettings: QuizSettings) => {
+        const studentUUID = "04474476-0204-4761-a110-495543d1e7a7";
+        const quizUUID = quizSettings.quizUUID;
+        try {
+            const response = await fetch(`http://localhost:8080/v1/api/student/${studentUUID}/addQuiz/${quizUUID}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "An unknown error occurred");
+        }
+    };
+
     const saveQuizSettings = async (quizSettings: QuizSettings) => {
         try {
             const response = await fetch("http://localhost:8080/v1/api/setting/save", {
@@ -127,6 +148,8 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             setError(error instanceof Error ? error.message : "An unknown error occurred");
             setQuizSettingsHolder(undefined); // Clear previous student data
         }
+
+        await saveQuizToStudent(quizSettings);//TODO remove!!! after demo
     };
 
     const createQuestionSetting = (quizSettings:QuizSettings):BaseSetting =>{
@@ -273,7 +296,7 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
     // }, [settings]);
     useEffect(() => {
         fetchSettingsByQuizId(settings);
-    }, [fetchSettingsByQuizId, settings]);
+    }, [settings]);
 
 
     /**
