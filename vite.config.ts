@@ -10,7 +10,12 @@ declare module "@remix-run/node" {
 
 export default defineConfig({
   define:{
-    global: 'window',
+    global: "window",
+  },
+  ssr:{
+    noExternal:[
+      "react-dropzone"
+    ]
   },
   plugins: [
     remix({
