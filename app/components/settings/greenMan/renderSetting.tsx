@@ -108,7 +108,7 @@ const renderSetting = (
             //Same as createSettingTitle but red for error as title
             return (
                 <div className="space-y-1">
-                    <h3 className="text-lg font-medium leading-none accent-red-600">{`Error${errorSetting.title ? `:${errorSetting.title}` : ""}`}</h3>
+                    <h3 className="text-lg font-medium leading-none accent-red-600">{`Error${errorSetting.title ? `: ${errorSetting.title}` : ""}`}</h3>
                     {errorSetting.value &&
                         <p className="text-base text-muted-foreground">
                             {errorSetting.value}
