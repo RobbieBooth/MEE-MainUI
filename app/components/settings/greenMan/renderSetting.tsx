@@ -9,7 +9,7 @@ import {
     ListSetting,
     SelectSetting,
     SettingType,
-    ToggleSetting, DescriptionSetting, ErrorSetting
+    ToggleSetting, DescriptionSetting, ErrorSetting, TagInputSetting
 } from "~/components/settings/compositeSettings";
 import {Input} from "~/components/ui/input";
 import {Toggle} from "~/components/settings/components/toggle";
@@ -21,6 +21,7 @@ import {SettingList} from "~/components/settings/components/settingList";
 import {SettingConditionalBool} from "~/components/settings/components/settingConditionalBool";
 import {SettingConditionalSelect} from "~/components/settings/components/settingConditionalSelect";
 import {createSettingTitle} from "~/components/settings/greenMan/DynamicForm";
+import {SettingTagInput} from "~/components/settings/components/settingTagInput";
 
 const renderSetting = (
     setting: BaseSetting,
@@ -54,6 +55,12 @@ const renderSetting = (
                         {setting.tooltip && <SettingTooltip tooltip={setting.tooltip}/>}
                     </div>
                 </div>
+            );
+        case SettingType.TagInput:
+            // eslint-disable-next-line no-case-declarations
+            const tagInputSetting = setting as TagInputSetting;
+            return (
+                <SettingTagInput tagInputSetting={tagInputSetting} control={control} key={setting.id}/>
             );
 
         case SettingType.Select:

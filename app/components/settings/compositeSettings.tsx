@@ -5,6 +5,7 @@ import {IDStore, Operations, SettingListOperation} from "~/components/settings/c
 export enum SettingType {
     Toggle = "Toggle",
     Input = "Input",
+    TagInput = "TagInput",
     Select = "Select",
     File = "File",
     Group = "Group",
@@ -69,6 +70,16 @@ export interface InputSetting extends BaseSetting {
     value: string;
     maxCharacters: number | null;
     maxLines: string | null; // If maxLines > 1, it's a multi-line input
+}
+
+// Leaf: TagInput
+/**
+ * An input text box where when entered it adds a value - similar to multi select but with no predefined options
+ */
+export interface TagInputSetting extends BaseSetting {
+    type: SettingType.TagInput;
+    value: string[];
+    maxEntries: number | null;
 }
 
 // Leaf: SelectSetting
@@ -143,6 +154,7 @@ export function recursivelyUpdateBaseSettingID(baseSetting:BaseSetting):BaseSett
         //Update Leafs
         case SettingType.Toggle:
         case SettingType.Input:
+        case SettingType.TagInput:
         case SettingType.Select:
         case SettingType.File:
         case SettingType.Error:
@@ -208,6 +220,14 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 maxCharacters: json.maxCharacters,
                 maxLines: json.maxLines,
             } as InputSetting;
+        case SettingType.TagInput:
+            return {
+                ...json,
+                id: settingUUID,
+                type: SettingType.TagInput,
+                value: json.value ?? [],
+                maxEntries: json.maxEntries,
+            } as TagInputSetting;
 
         case SettingType.Select:
             return {
@@ -320,6 +340,11 @@ export function updateSettingData(setting:BaseSetting, newValue:any) {
             const inputSetting = setting as InputSetting;
             inputSetting.value = newValue;
             return inputSetting;
+        case SettingType.TagInput:
+            // eslint-disable-next-line no-case-declarations
+            const tagInputSetting = setting as TagInputSetting;
+            tagInputSetting.value = newValue;
+            return tagInputSetting;
         case SettingType.Select:
             // eslint-disable-next-line no-case-declarations
             const selectSetting = setting as SelectSetting;
@@ -404,6 +429,7 @@ export function recursivelySetIDs(baseSetting: BaseSetting, idStore: IDStore): v
     switch (baseSetting.type) {
         case SettingType.Toggle:
         case SettingType.Input:
+        case SettingType.TagInput:
         case SettingType.Select:
         case SettingType.File:
         case SettingType.Description:
@@ -449,6 +475,7 @@ export function recursivelyGetIDs(baseSetting:BaseSetting):IDStore {
     switch(baseSetting.type) {
         case SettingType.Toggle:
         case SettingType.Input:
+        case SettingType.TagInput:
         case SettingType.Select:
         case SettingType.File:
         case SettingType.Description:
