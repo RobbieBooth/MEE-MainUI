@@ -22,6 +22,7 @@ import {SettingConditionalBool} from "~/components/settings/components/settingCo
 import {SettingConditionalSelect} from "~/components/settings/components/settingConditionalSelect";
 import {createSettingTitle} from "~/components/settings/greenMan/DynamicForm";
 import {SettingTagInput} from "~/components/settings/components/settingTagInput";
+import {Textarea} from "~/components/ui/textarea";
 
 const renderSetting = (
     setting: BaseSetting,
@@ -41,17 +42,52 @@ const renderSetting = (
             );
 
         case SettingType.Input:
+            // eslint-disable-next-line no-case-declarations
+            const inputSetting = setting as InputSetting;
+
+            // eslint-disable-next-line no-case-declarations
+            const maxRows = calculateTextAreaMaxRows(inputSetting.maxLines)
             return (
                 <div key={setting.id}>
                     <label className="block">{setting.label}</label>
                     <div className="inline-flex align-middle items-center">
-                    <Input
-                        {...register(setting.id)}
-                        defaultValue={(setting as InputSetting).value}
-                        disabled={setting.disabled}
-                        maxLength={(setting as InputSetting).maxCharacters || undefined}
-                        placeholder={setting.tooltip}
-                    />
+                        {
+                            inputSetting.maxLines === "1"
+                            ?
+                                <Input
+                                    {...register(setting.id)}
+                                    defaultValue={inputSetting.value}
+                                    disabled={setting.disabled}
+                                    maxLength={inputSetting.maxCharacters || undefined}
+                                    placeholder={setting.tooltip}
+                                    // multiple={true}
+                                    // max={3}
+                                    // onSubmit={(event)=> event.preventDefault()}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter") {
+                                            event.preventDefault(); // Prevent form submission
+                                        }}}
+                                />
+                                :
+                                <Textarea
+                                    {...register(setting.id)}
+                                    defaultValue={inputSetting.value}
+                                          disabled={setting.disabled}
+                                          maxLength={inputSetting.maxCharacters || undefined}
+                                          placeholder={setting.tooltip ?? undefined}
+                                          onKeyDown={(event) => {
+                                              const currentLines = event.currentTarget.value.split("\n").length;
+
+                                              if (event.key === "Enter" && maxRows && currentLines >= maxRows) {
+                                                  event.preventDefault();
+                                                  console.warn(`Max lines reached: ${maxRows}`);
+                                              }
+                                          }
+                                          }
+                                />
+
+                        }
+
                         {setting.tooltip && <SettingTooltip tooltip={setting.tooltip}/>}
                     </div>
                 </div>
@@ -128,5 +164,18 @@ const renderSetting = (
             return null;
     }
 };
+
+function calculateTextAreaMaxRows(maxLines:string | null): number | undefined {
+        if(maxLines == null){
+            return undefined;
+        }
+        //Convert to number
+        const maxLinesNumber = Number(maxLines); // Convert string to number
+        if (isNaN(maxLinesNumber)) {
+            console.error(`Invalid maxLines value: "${maxLines}". Expected a number.`);
+            return undefined;
+        }
+        return maxLinesNumber;
+}
 
 export {renderSetting};

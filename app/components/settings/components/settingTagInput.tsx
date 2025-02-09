@@ -28,7 +28,7 @@ export function SettingTagInput(
                     <label className="block">{tagInputSetting.label}</label>
                     <div className="inline-flex align-middle items-center">
                     <TagsInput
-                    value={tagInputSetting.value}
+                    value={field.value}
                 onValueChange={field.onChange}
                 placeholder={tagInputSetting.tooltip ?? undefined}
             />
