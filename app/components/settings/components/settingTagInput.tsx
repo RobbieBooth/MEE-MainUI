@@ -31,6 +31,7 @@ export function SettingTagInput(
                     value={field.value}
                 onValueChange={field.onChange}
                 placeholder={tagInputSetting.tooltip ?? undefined}
+                    maxItems={tagInputSetting.maxEntries ?? undefined}
             />
                         {tagInputSetting.tooltip && <SettingTooltip tooltip={tagInputSetting.tooltip}/>}
                     </div>
