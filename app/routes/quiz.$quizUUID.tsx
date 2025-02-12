@@ -1,4 +1,4 @@
-import { useParams } from "@remix-run/react";
+import {useLoaderData, useParams} from "@remix-run/react";
 import {useStompWithSend} from "~/components/hooks/stompMessageHook";
 import React, {useEffect, useRef, useState} from "react";
 import {SidebarProvider, SidebarTrigger} from "~/components/ui/sidebar";
@@ -7,10 +7,23 @@ import {Button} from "~/components/ui/button";
 import {ChevronLeft, ChevronRight} from "lucide-react";
 import {Question} from "~/routes/about";
 import {StudentQuestionAttempt, StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
+import {LoaderFunction} from "@remix-run/node";
+import {authenticate, OAuthUser} from "~/auth.server";
+
+
+export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUser}> => {
+    // @ts-ignore
+    const user = await authenticate(request, `/quiz/${request.quizUUID}`);
+    // use the user data here
+
+    return { user };
+};
+
 
 export default function QuizPage() {
+    const { user } = useLoaderData<typeof loader>() as {user: OAuthUser};
     const params = useParams();
-    const { messages, sendStart, sendMessage, isConnected, quiz } = useStompWithSend();
+    const { messages, sendStart, sendMessage, isConnected, quiz } = useStompWithSend(user.backendJWT!);
 
     const handleSubmit = () => {
             sendStart({

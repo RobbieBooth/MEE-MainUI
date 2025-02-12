@@ -30,13 +30,19 @@ import {
     useSidebar,
 } from "~/components/ui/sidebar"
 import {OAuthUser} from "~/auth.server";
+import {useEffect} from "react";
 
 export function NavUser({
                             user,
                         }: {
     user: OAuthUser
 }) {
-    const { isMobile } = useSidebar()
+    const { isMobile } = useSidebar();
+    // const
+    //
+    // useEffect(() => {
+    //
+    // },[user])
 
     return (
         <SidebarMenu>
@@ -48,8 +54,17 @@ export function NavUser({
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
-                                <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                <AvatarImage src={user.avatar.avatarUrl} alt={user.name} />
+                                <AvatarFallback className="rounded-lg">
+                                    {user.name
+                                        ? user.name
+                                            .split(" ") // Split name into words
+                                            .map((word) => word[0]) // Take the first letter of each word
+                                            .join("") // Join letters
+                                            .toUpperCase() // Convert to uppercase
+                                        : "" // Default fallback if name is not provided
+                                    }
+                                </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">{user.name}</span>
@@ -67,8 +82,17 @@ export function NavUser({
                         <DropdownMenuLabel className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="h-8 w-8 rounded-lg">
-                                    <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                    <AvatarImage src={user.avatar.avatarUrl} alt={user.name} />
+                                    <AvatarFallback className="rounded-lg">
+                                        {user.name
+                                            ? user.name
+                                                .split(" ") // Split name into words
+                                                .map((word) => word[0]) // Take the first letter of each word
+                                                .join("") // Join letters
+                                                .toUpperCase() // Convert to uppercase
+                                            : "" // Default fallback if name is not provided
+                                        }
+                                    </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">{user.name}</span>

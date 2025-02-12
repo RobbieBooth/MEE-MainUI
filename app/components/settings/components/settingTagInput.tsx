@@ -1,7 +1,7 @@
 import {Input} from "~/components/ui/input";
 import {InputSetting, SelectSetting, TagInputSetting} from "~/components/settings/compositeSettings";
 import {SettingTooltip} from "~/components/settings/components/settingTooltip";
-import React from "react";
+import React, {useEffect} from "react";
 import {TagsInput} from "~/components/ui/tags-input";
 import {Controller} from "react-hook-form";
 

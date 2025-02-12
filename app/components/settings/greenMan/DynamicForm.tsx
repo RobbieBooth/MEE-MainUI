@@ -278,78 +278,7 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
     }, [settings]);
 
 
-    /**
-     * Recursively updates all of the settings. It also removes the error setting
-     * @param ids
-     * @param settings
-     */
-    const updateSettingRecursively = (ids: { [key: string]: any }, settings:BaseSetting[])=> {
-        return settings.filter(setting => setting.type !== SettingType.Error)//Remove the error ones then do all updates
-            .map((setting) =>{
-            let baseSetting = setting;
-            const id = baseSetting.id;
-            //big o of o(1) since has table
-            if (id in ids) {
-                const value = ids[id];
-                baseSetting = updateSettingData(baseSetting, value);
-            }
 
-            //Run through composites and update their children
-            switch (baseSetting.type) {
-                case SettingType.Group:
-                    // eslint-disable-next-line no-case-declarations
-                    const groupSetting = baseSetting as GroupSetting;
-                    groupSetting.children = updateSettingRecursively(ids, groupSetting.children);
-                    return groupSetting;
-                case SettingType.ListSetting:
-                    // eslint-disable-next-line no-case-declarations
-                    const listSetting = baseSetting as ListSetting;
-                    listSetting.children = updateSettingRecursively(ids, listSetting.children) as BaseSetting[];
-                    return listSetting;
-                case SettingType.ConditionalBool:
-                    // eslint-disable-next-line no-case-declarations
-                    let conditionalSetting = baseSetting as ConditionalBoolSetting;
-                    conditionalSetting = updateBoolConditionalData(ids, conditionalSetting);
-                    return conditionalSetting;
-                case SettingType.ConditionalSelect:
-                    // eslint-disable-next-line no-case-declarations
-                    let conditionalSelect = baseSetting as ConditionalSelectSetting;
-                    conditionalSelect = updateSelectConditionalData(ids, conditionalSelect);
-                    return conditionalSelect
-            }
-            return baseSetting;
-        })
-    };
-
-    const updateBoolConditionalData = (ids: { [key: string]: any }, setting:ConditionalBoolSetting)=> {
-        const newSetting = setting;
-        const toggleSetting = newSetting.condition;
-        if (toggleSetting.id in ids) {
-            const value = ids[toggleSetting.id];
-            newSetting.condition = updateSettingData(toggleSetting, value) as ToggleSetting;
-        }
-
-        // const groupSetting = setting.group as GroupSetting;
-        // groupSetting.children = updateSettingRecursively(ids, groupSetting.children);
-        newSetting.children = updateSettingRecursively(ids, [setting.children])[0];
-        return newSetting;
-    }
-
-    const updateSelectConditionalData = (ids: { [p: string]: any }, conditionalSelect: ConditionalSelectSetting) => {
-        const newSetting = conditionalSelect;
-        const select = newSetting.condition;
-        if (select.id in ids) {
-            const value = ids[select.id];
-            newSetting.condition = updateSettingData(select, value) as SelectSetting;
-        }
-
-        Object.entries(newSetting.groups).forEach(([key, group]) => {
-            //It will recursively go through children by going per group
-            newSetting.groups[key] = updateSettingRecursively(ids, [group])[0];
-        });
-
-        return newSetting;
-    };
 
     if(loading){
         return null;
@@ -391,3 +320,76 @@ export function createSettingTitle(title?:string, description?:string) {
         }
     </div>;
 }
+
+/**
+ * Recursively updates all of the settings. It also removes the error setting
+ * @param ids
+ * @param settings
+ */
+export function updateSettingRecursively (ids: { [key: string]: any }, settings:BaseSetting[]):BaseSetting[] {
+    return settings.filter(setting => setting.type !== SettingType.Error)//Remove the error ones then do all updates
+        .map((setting) =>{
+            let baseSetting = setting;
+            const id = baseSetting.id;
+            //big o of o(1) since has table
+            if (id in ids) {
+                const value = ids[id];
+                baseSetting = updateSettingData(baseSetting, value);
+            }
+
+            //Run through composites and update their children
+            switch (baseSetting.type) {
+                case SettingType.Group:
+                    // eslint-disable-next-line no-case-declarations
+                    const groupSetting = baseSetting as GroupSetting;
+                    groupSetting.children = updateSettingRecursively(ids, groupSetting.children);
+                    return groupSetting;
+                case SettingType.ListSetting:
+                    // eslint-disable-next-line no-case-declarations
+                    const listSetting = baseSetting as ListSetting;
+                    listSetting.children = updateSettingRecursively(ids, listSetting.children) as BaseSetting[];
+                    return listSetting;
+                case SettingType.ConditionalBool:
+                    // eslint-disable-next-line no-case-declarations
+                    let conditionalSetting = baseSetting as ConditionalBoolSetting;
+                    conditionalSetting = updateBoolConditionalData(ids, conditionalSetting);
+                    return conditionalSetting;
+                case SettingType.ConditionalSelect:
+                    // eslint-disable-next-line no-case-declarations
+                    let conditionalSelect = baseSetting as ConditionalSelectSetting;
+                    conditionalSelect = updateSelectConditionalData(ids, conditionalSelect);
+                    return conditionalSelect
+            }
+            return baseSetting;
+        })
+}
+
+const updateBoolConditionalData = (ids: { [key: string]: any }, setting:ConditionalBoolSetting)=> {
+    const newSetting = setting;
+    const toggleSetting = newSetting.condition;
+    if (toggleSetting.id in ids) {
+        const value = ids[toggleSetting.id];
+        newSetting.condition = updateSettingData(toggleSetting, value) as ToggleSetting;
+    }
+
+    // const groupSetting = setting.group as GroupSetting;
+    // groupSetting.children = updateSettingRecursively(ids, groupSetting.children);
+    newSetting.children = updateSettingRecursively(ids, [setting.children])[0];
+    return newSetting;
+}
+
+const updateSelectConditionalData = (ids: { [p: string]: any }, conditionalSelect: ConditionalSelectSetting) => {
+    const newSetting = conditionalSelect;
+    const select = newSetting.condition;
+    if (select.id in ids) {
+        const value = ids[select.id];
+        newSetting.condition = updateSettingData(select, value) as SelectSetting;
+    }
+
+    Object.entries(newSetting.groups).forEach(([key, group]) => {
+        //It will recursively go through children by going per group
+        newSetting.groups[key] = updateSettingRecursively(ids, [group])[0];
+    });
+
+    return newSetting;
+};

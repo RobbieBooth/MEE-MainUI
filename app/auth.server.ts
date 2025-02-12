@@ -6,6 +6,7 @@ import {sessionStorage} from "./session.server";
 import {IUser} from "~/db/model/user";
 import {createUser, getUserByEmail} from "~/db/userService";
 import {generateJwt} from "~/token.server";
+import {MicrosoftStrategy} from "remix-auth-microsoft";
 
 export const authenticator = new Authenticator<OAuthUser>();
 type JWT = string;
@@ -13,42 +14,82 @@ export type OAuthUser = {
     openId: string;
     name: string;
     email: string | null;
-    avatarUrl: string;
+    avatar: {
+        requestPictureWithAccessToken: boolean;
+        avatarUrl: string;
+    };
     accessToken: string;
     associatedDBUser: IUser | undefined;
     backendJWT: JWT | undefined;
 };
 
-// let microsoftStrategy = new MicrosoftStrategy(
-//     {
-//         clientId: "YOUR_CLIENT_ID",
-//         clientSecret: "YOUR_CLIENT_SECRET",
-//         redirectURI: "http://localhost:5173/auth/microsoft/callback",
-//         tenantId: "YOUR_TENANT_ID", // optional - necessary for organization without multitenant (see below)
-//         scopes: ["openid", "profile", "email"], // optional
-//         prompt: "login", // optional
-//     },
-//     async ({ request, tokens }) => {
-//         // Here you can fetch the user from database or return a user object based on profile
-//         const accessToken = tokens.accessToken();
-//         let idToken = tokens.idToken();
-//         const profile = await MicrosoftStrategy.userProfile(accessToken);
-//
-//         // The returned object is stored in the session storage you are using by the authenticator
-//
-//         // If you're using cookieSessionStorage, be aware that cookies have a size limit of 4kb
-//
-//         // Retrieve or create user using id received from userinfo endpoint
-//         // https://graph.microsoft.com/oidc/userinfo
-//
-//         // DO NOT USE EMAIL ADDRESS TO IDENTIFY USERS
-//         // The email address received from Microsoft Entra ID is not validated and can be changed to anything from Azure Portal.
-//         // If you use the email address to identify users and allow signing in from any tenant (`tenantId` is not set)
-//         // it opens up a possibility of spoofing users!
-//
-//         return User.findOrCreate({ id: profile.id });
-//     }
-// );
+if(!process.env.MICROSOFT_CLIENT_ID || !process.env.MICROSOFT_CLIENT_SECRET || !process.env.MICROSOFT_TENANT_ID){
+    throw new Error("Oauth ClientID or Client secret not defined")
+}
+
+
+const microsoftStrategy = new MicrosoftStrategy(
+    {
+        clientId: process.env.MICROSOFT_CLIENT_ID,
+        clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+        tenantId: process.env.MICROSOFT_TENANT_ID, // optional - necessary for organization without multitenant (see below)
+        redirectURI: "http://localhost:5173/auth/microsoft/callback",
+        
+        scopes: ["openid", "profile", "email","User.Read"], // optional
+        prompt: "login", // optional
+    },
+    async ({ request, tokens }) => {
+        // Here you can fetch the user from database or return a user object based on profile
+        const accessToken = tokens.accessToken();
+        const user = await getMicrosoftUser(accessToken, request);
+        let userDB = await getUserByEmail(user.email!);
+        if(userDB == null) {
+            userDB = await createUser({
+                email: user.email!,
+                name: user.name,
+                openId: user.openId,
+            } as any);
+        }
+        user.associatedDBUser = userDB;
+        user.backendJWT = generateJwt(userDB._id, userDB.roles);
+        return user;
+
+        // The returned object is stored in the session storage you are using by the authenticator
+
+        // If you're using cookieSessionStorage, be aware that cookies have a size limit of 4kb
+
+        // Retrieve or create user using id received from userinfo endpoint
+        // https://graph.microsoft.com/oidc/userinfo
+
+        // DO NOT USE EMAIL ADDRESS TO IDENTIFY USERS
+        // The email address received from Microsoft Entra ID is not validated and can be changed to anything from Azure Portal.
+        // If you use the email address to identify users and allow signing in from any tenant (`tenantId` is not set)
+        // it opens up a possibility of spoofing users!
+
+        // return User.findOrCreate({ id: profile.id });
+    }
+);
+authenticator.use(microsoftStrategy);
+
+async function getMicrosoftUser(accessToken: string, request: Request): Promise<OAuthUser> {
+    const profile = await MicrosoftStrategy.userProfile(accessToken);
+
+    const profileJSON = profile._json;
+
+    return {
+        backendJWT: undefined,
+        associatedDBUser: undefined,
+        openId: profileJSON.sub,
+        name: profileJSON.given_name +" "+ profileJSON.family_name,
+        email: profileJSON.email, // GitHub may return null if email is private
+        avatar: {
+            requestPictureWithAccessToken: true,
+            avatarUrl: "https://graph.microsoft.com/v1.0/me/photo/$value"
+        },
+        accessToken:"accessToken"
+    };
+}
+
 if(!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET){
     throw new Error("Oauth ClientID or Client secret not defined")
 }
@@ -129,8 +170,11 @@ async function getGithubUser(accessToken: string, request: Request): Promise<OAu
         openId: profile.id.toString(),
         name: profile.name || profile.login,
         email: primaryEmail.email, // GitHub may return null if email is private
-        avatarUrl: profile.avatar_url,
-        accessToken:accessToken
+        avatar: {
+            requestPictureWithAccessToken: false,
+            avatarUrl: profile.avatar_url
+        },
+        accessToken:"accessToken"
     };
 }
 
