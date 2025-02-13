@@ -70,6 +70,23 @@ const getUserMap = async (classInfo: Class):Promise<UserMap> => {
     return new Map<string, userDetails>();
 };
 
+export async function getClassFromBackend(classUUID: string, user: OAuthUser) {
+    const response = await fetch(`http://localhost:8080/v1/api/class/${classUUID}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.backendJWT}`
+        },
+    });
+
+    if (!response.ok) {
+        throw new Response("Failed to fetch class data", {status: response.status});
+    }
+
+    const classData: Class = await response.json();
+    return classData;
+}
+
 export const loader: LoaderFunction = async ({ params, request }) => {
     const { classUUID } = params;
 
@@ -80,19 +97,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     const user = await authenticate(request, `/class/${classUUID}`);
 
     // Fetch the class data from your backend API
-    const response = await fetch(`http://localhost:8080/v1/api/class/${classUUID}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.backendJWT}`
-        },
-    });
-
-    if (!response.ok) {
-        throw new Response("Failed to fetch class data", { status: response.status });
-    }
-
-    const classData:Class = await response.json();
+    const classData = await getClassFromBackend(classUUID, user);
     // const userMap = await getUserMap(classData);
 
 

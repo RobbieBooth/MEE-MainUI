@@ -17,6 +17,14 @@ import {
 import {Separator} from "~/components/ui/separator"; // Import the utility function
 import {v4 as uuidv4} from "uuid";
 import {OAuthUser} from "~/auth.server";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator
+} from "~/components/ui/breadcrumb";
+import {LogOut} from "lucide-react";
 
 type ModuleName = string;
 type UUID = string;
@@ -294,9 +302,42 @@ export const DynamicForm = ({ settings, classUUID, user }: { settings: string | 
     }
 
     return (
-        <FormProvider {...methods}>
-            <form onSubmit={onFormSubmit} className="space-y-8 max-w-3xl mx-auto py-10 min-h-screen">
-                {createSettingTitle("Quiz Settings", "The settings for the quiz.")}
+        <div>
+            {/*Temporary until we have solution to make the breadcrumbs dynamically*/}
+            <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4">
+                <a href={`/class/${classUUID}`} className="inline-flex space-x-2">
+                    <LogOut className="rotate-180"/>
+                </a>
+                <Separator orientation="vertical" className="mr-2 h-4"/>
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink href="/class/">
+                                My Classes
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block"/>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink href={`/class/${classUUID}`}>
+                                Class
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block"/>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink href={`/class/${classUUID}/quiz/`}>
+                                Quiz
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block"/>
+                        <BreadcrumbItem>
+                            <BreadcrumbPage>Setting</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+            </header>
+            <FormProvider {...methods}>
+                <form onSubmit={onFormSubmit} className="space-y-8 max-w-3xl mx-auto py-10 min-h-screen">
+                    {createSettingTitle("Quiz Settings", "The settings for the quiz.")}
                 {quizSetting.map((baseSetting) =>
                     renderSetting(baseSetting, control, register, setValue)
                 )}
@@ -305,13 +346,15 @@ export const DynamicForm = ({ settings, classUUID, user }: { settings: string | 
                 {questionSetting.map((baseSetting) =>
                     renderSetting(baseSetting, control, register, setValue)
                 )}
-                <Button type="submit">Submit</Button>
+                <Button type="submit">Save</Button>
             </form>
         </FormProvider>
-    );
+        </div>
+)
+    ;
 };
 
-export function createSettingTitle(title?:string, description?:string) {
+export function createSettingTitle(title?: string, description?: string) {
     return <div className="space-y-1">
         {title && <h3 className="text-lg font-medium leading-none">{title}</h3>}
         {description &&
