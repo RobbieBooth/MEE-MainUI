@@ -4,7 +4,7 @@ import { sendClassToSpring } from "~/utils/springClient";
 import {authenticate, authenticator} from "~/auth.server";
 
 export const action = async ({ request }: { request: Request }) => {
-    const user = await authenticate(request, "/class/api");
+    const user = await authenticate(request, "/class/api/edit");
     if (!user) {
         return new Response("Unauthorized", { status: 401 });
     }

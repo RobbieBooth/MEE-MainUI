@@ -99,15 +99,20 @@ function SidebarItem({item}: { item: sidebarItem}) {
 
                 >
                     <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                            <SidebarMenuButton tooltip={item.title}>
-                                {item.icon && <item.icon />}
+
+                        <SidebarMenuButton tooltip={item.title}>
+                            <a href={item.url} className="inline-flex space-x-1">
+                                {item.icon && <item.icon/>}
                                 <span>{item.title}</span>
-                                {/*Changed to this to fix bug with nested collapse chevrons not swapping sides on open*/}
-                                {open ? <ChevronRight className="ml-auto transition-transform duration-200 rotate-90" /> : <ChevronRight className="ml-auto transition-transform duration-200" /> }
-                                {/*<ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />*/}
-                            </SidebarMenuButton>
-                        </CollapsibleTrigger>
+                            </a>
+                            {/*Changed to this to fix bug with nested collapse chevrons not swapping sides on open*/}
+                            <CollapsibleTrigger asChild>
+                                {open ?
+                                    <ChevronRight className="ml-auto transition-transform duration-200 rotate-90"/> :
+                                    <ChevronRight className="ml-auto transition-transform duration-200"/>}
+                            </CollapsibleTrigger>
+                            {/*<ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />*/}
+                        </SidebarMenuButton>
                         <CollapsibleContent>
                             <SidebarMenuSub>
                                 {item.children.map((subItem) => (

@@ -102,6 +102,28 @@ export const getOrCreateUsersByEmails = async (emails: string[], accessJWT: stri
     return [...existingUsers, ...newUsers];
 };
 
+/**
+ * Function to fetch multiple users and map UUID to name and email
+  */
+export async function getUsersDetailsByIds(userIds: string[]): Promise<Map<string, { email: string; name: string }>> {
+    await connectDB();
+    try {
+        // Query for users whose _id is in the list
+        const users = await User.find({ _id: { $in: userIds } }, "email name").exec();
+
+        // Convert to a Map of UUID to { email, name }
+        const userMap = new Map<string, { email: string; name: string }>();
+        for (const user of users) {
+            userMap.set(user._id, { email: user.email, name: user.name });
+        }
+
+        return userMap;
+    } catch (error) {
+        console.error("Error fetching users by IDs:", error);
+        throw error;
+    }
+}
+
 const addManyAnonymousUsersBackend = async (userUUIDs: string[], accessJWT: string): Promise<string> => {
     try {
         const response = await fetch("http://localhost:8080/v1/api/user/createmany", {

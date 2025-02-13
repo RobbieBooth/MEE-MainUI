@@ -138,7 +138,7 @@ export function ClassForm(
         };
 
         try {
-            const response = await fetch("/class/api", {
+            const response = await fetch("/class/api/edit", {
                 method: "POST", // Remix action expects POST
                 headers: {
                     "Content-Type": "application/json",

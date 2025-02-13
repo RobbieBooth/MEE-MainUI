@@ -27,35 +27,11 @@ export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUse
 export default function Dashboard() {
     const { user } = useLoaderData<typeof loader>() as {user: OAuthUser};
 
-    const sidebarItems:sidebarItem[] = [
-    ];
     return (
-        <MySidebar  sidebarItems={sidebarItems} user={user}>
+        <MySidebar user={user}>
             <div>
                 <ClassForm userEmail={user.email!} classFormFields={{className:"", classDescription: "", classEducatorEmails: [], classStudentEmails:[]}}/>
             </div>
         </MySidebar>
-    )
-}
-
-export function DialogDemo() {
-    return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="outline">Create Class</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Create Class</DialogTitle>
-                    <DialogDescription>
-                        Create a new class
-                    </DialogDescription>
-                </DialogHeader>
-                    {/*<ClassForm userEmail={} classFormFields={}/>*/}
-                <DialogFooter>
-                    <Button type="submit">Save changes</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
     )
 }

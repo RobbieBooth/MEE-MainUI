@@ -16,6 +16,7 @@ import {
 } from "~/components/settings/compositeSettings";
 import {Separator} from "~/components/ui/separator"; // Import the utility function
 import {v4 as uuidv4} from "uuid";
+import {OAuthUser} from "~/auth.server";
 
 type ModuleName = string;
 type UUID = string;
@@ -64,7 +65,7 @@ function createQuizSettings(json:any):QuizSettings {
 
 }
 
-export const DynamicForm = ({ settings }: { settings: string | null}) => {
+export const DynamicForm = ({ settings, classUUID, user }: { settings: string | null, classUUID:string, user:OAuthUser}) => {
     const [baseSettings, setBaseSettings] = useState<BaseSetting[]>([]);
     const [quizSetting, setQuizSetting] = useState<BaseSetting[]>([]);
     const [questionSetting, setQuestionSetting] = useState<BaseSetting[]>([]);
@@ -76,10 +77,11 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
 
     const fetchSettingsByQuizId = async (QuizID:string|null) => {
         try {
-            const response = await fetch(`http://localhost:8080/v1/api/setting/${QuizID ?? ""}`, {
+            const response = await fetch(`http://localhost:8080/v1/api/class/${classUUID}/quiz/setting/${QuizID ?? ""}`, {
                 method: "GET", // or 'POST', 'PUT', 'DELETE', etc.
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${user.backendJWT}`
                 },
             });
 
@@ -97,7 +99,7 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             //Change the page url to having the new quizUUID without causing a rerender and getting the setting again.
             //This will cut request time by half theoretically.
             //This also allows us, once the quiz has been saved, to reload and get the quiz we were editing instead of a completely new one.
-            window.history.replaceState(null, "Settings Page", `/setting/${data.quizUUID}`);
+            window.history.replaceState(null, "Settings Page", `/class/${classUUID}/quiz/setting/${data.quizUUID}`);
         } catch (error) {
             setError(error instanceof Error ? error.message : "An unknown error occurred");
             setQuizSettingsHolder(undefined); // Clear previous student data
@@ -107,11 +109,12 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
 
     const saveQuizSettings = async (quizSettings: QuizSettings) => {
         try {
-            const response = await fetch("http://localhost:8080/v1/api/setting/save", {
+            const response = await fetch(`http://localhost:8080/v1/api/class/${classUUID}/quiz/setting/save`, {
                 method: "POST",
                 body: JSON.stringify(quizSettings),
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${user.backendJWT}`
                 },
             });
 
@@ -127,8 +130,6 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             setError(error instanceof Error ? error.message : "An unknown error occurred");
             setQuizSettingsHolder(undefined); // Clear previous student data
         }
-
-        // await saveQuizToStudent(quizSettings);//TODO remove!!! after demo
     };
 
     const createQuestionSetting = (quizSettings:QuizSettings):BaseSetting =>{
