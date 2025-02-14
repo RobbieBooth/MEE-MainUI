@@ -9,7 +9,7 @@ import {
     ListSetting,
     SelectSetting,
     SettingType,
-    ToggleSetting, DescriptionSetting, ErrorSetting, TagInputSetting
+    ToggleSetting, DescriptionSetting, ErrorSetting, TagInputSetting, DateSetting
 } from "~/components/settings/compositeSettings";
 import {Input} from "~/components/ui/input";
 import {Toggle} from "~/components/settings/components/toggle";
@@ -23,6 +23,7 @@ import {SettingConditionalSelect} from "~/components/settings/components/setting
 import {createSettingTitle} from "~/components/settings/greenMan/DynamicForm";
 import {SettingTagInput} from "~/components/settings/components/settingTagInput";
 import {Textarea} from "~/components/ui/textarea";
+import {SettingDate} from "~/components/settings/components/settingDate";
 
 const renderSetting = (
     setting: BaseSetting,
@@ -46,7 +47,7 @@ const renderSetting = (
             const inputSetting = setting as InputSetting;
 
             // eslint-disable-next-line no-case-declarations
-            const maxRows = calculateTextAreaMaxRows(inputSetting.maxLines)
+            const maxRows = calculateTextAreaMaxRows(inputSetting.maxLines);
             return (
                 <div key={setting.id}>
                     <label className="block">{setting.label}</label>
@@ -112,7 +113,12 @@ const renderSetting = (
             return (
                     <FileUploaderSetting fileSetting={fileSetting} control={control} key={setting.id}/>
             );
-
+        case SettingType.Date:
+            // eslint-disable-next-line no-case-declarations
+            const dateSetting = setting as DateSetting;
+            return(
+                    <SettingDate dateSetting={dateSetting} control={control} key={setting.id}/>
+            );
         case SettingType.Group:
             // eslint-disable-next-line no-case-declarations
             const groupSetting = setting as GroupSetting;

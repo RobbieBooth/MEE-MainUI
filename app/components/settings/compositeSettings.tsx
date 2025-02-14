@@ -3,11 +3,15 @@ import {v4 as uuidv4} from "uuid";
 import {IDStore, Operations, SettingListOperation} from "~/components/settings/components/settingList";
 
 export enum SettingType {
+    //leafs
     Toggle = "Toggle",
     Input = "Input",
     TagInput = "TagInput",
     Select = "Select",
     File = "File",
+    Date = "Date",
+
+    //Composite style
     Group = "Group",
     ListSetting = "ListSetting",
     ConditionalBool = "ConditionalBool",
@@ -112,6 +116,12 @@ export interface FileInputSetting extends BaseSetting {
     maxCumulativeFileSizeBytes: number;
 }
 
+// Leaf: DateSetting
+export interface DateSetting extends BaseSetting {
+    type: SettingType.Date;
+    unixTimestamp: number,
+}
+
 // Composite: GroupSetting
 export interface GroupSetting extends BaseSetting {
     type: SettingType.Group;
@@ -157,6 +167,7 @@ export function recursivelyUpdateBaseSettingID(baseSetting:BaseSetting):BaseSett
         case SettingType.TagInput:
         case SettingType.Select:
         case SettingType.File:
+        case SettingType.Date:
         case SettingType.Error:
         case SettingType.Description:
             baseSetting.id = uuidv4();
@@ -249,6 +260,13 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 allowMultipleFiles: json.allowMultipleFiles,
                 maxCumulativeFileSizeBytes: json.maxCumulativeFileSizeBytes,
             } as FileInputSetting;
+        case SettingType.Date:
+            return {
+                ...json,
+                id: settingUUID,
+                type: SettingType.Date,
+                unixTimestamp: json.unixTimestamp ?? Date.now(),
+            } as DateSetting;
         case SettingType.Error:
             return{
                 ...json,
@@ -359,6 +377,11 @@ export function updateSettingData(setting:BaseSetting, newValue:any) {
             const fileSetting = setting as FileInputSetting;
             fileSetting.files = newValue;
             return fileSetting;
+        case SettingType.Date:
+            // eslint-disable-next-line no-case-declarations
+            const dateSetting = setting as DateSetting;
+            dateSetting.unixTimestamp = newValue;//TODO this may be Date object not number
+            return dateSetting;
         case SettingType.Group:
             // eslint-disable-next-line no-case-declarations
             //Throw error as we cant update this
@@ -478,6 +501,7 @@ export function recursivelyGetIDs(baseSetting:BaseSetting):IDStore {
         case SettingType.TagInput:
         case SettingType.Select:
         case SettingType.File:
+        case SettingType.Date:
         case SettingType.Description:
         case SettingType.Error:
             return {children: [], id: baseSetting.id};
