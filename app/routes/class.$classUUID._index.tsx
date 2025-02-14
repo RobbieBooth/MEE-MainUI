@@ -18,21 +18,44 @@ export type Class = {
 };
 
 // Assuming QuizInfo and AvailableQuiz are already defined elsewhere
-type QuizInfo = {
-    // Define the properties of QuizInfo here
+export type QuizInfo = {
+    quizID: string; // UUID as string
+    quizName: string;
+    quizDescription: string;
+    questionCount: number;
+    createdAt: number; // Unix time in milliseconds
+    versionID?: string; // UUID as string
 };
 
-type AvailableQuiz = {
-    // Define the properties of AvailableQuiz here
-};
+export interface AvailableQuiz {
+    id: string;
+    quizInfo: QuizInfo;
+    startTime?: number; // Unix time in milliseconds
+    endTime?: number;   // Unix time in milliseconds
+    studentsAvailableTo?: string[]; // Array of UUIDs (as strings)
+    useLatestVersion: boolean;
+    studentAttempts: SampleStudentAttempt[];
+    instantResult: boolean;
+    maxAttemptCount?: number; // null or undefined for infinite attempts
+}
+export interface SampleStudentAttempt {
+    studentAttemptId: string;
+    quizID: string; // UUID as string
+    versionID: string; // UUID as string
+    studentID: string; // UUID as string
+    grade?: number; // Optional grade
+    maxGrade?: number; // Optional max grade
+}
+
+
 
 interface userDetails {
     email: string;
     name?: string;
 }
 
-type UserMap = Map<string, userDetails>;
-const getUserMap = async (classInfo: Class):Promise<UserMap> => {
+export type UserMap = Map<string, userDetails>;
+export const getUserMap = async (classInfo: Class):Promise<UserMap> => {
     const uuidList = classInfo.students;
     uuidList.push(...classInfo.educators);
 
@@ -82,8 +105,10 @@ export async function getClassFromBackend(classUUID: string, user: OAuthUser) {
     if (!response.ok) {
         throw new Response("Failed to fetch class data", {status: response.status});
     }
+    const jsonResponse = await response.json()
+    const classData: Class = jsonResponse;
+    console.log("Json response:",jsonResponse);
 
-    const classData: Class = await response.json();
     return classData;
 }
 
