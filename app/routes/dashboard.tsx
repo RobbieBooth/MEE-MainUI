@@ -226,11 +226,11 @@ export function MySidebar({ children, user }:SidebarProps) {
 
             const gradeSidebar:sidebarItem ={
                 title: "Grades",
-                url: classURL+"/grades"
+                url: classURL+"/grade/"
             }
             const quizSidebar:sidebarItem ={
                 title: "Quizzes",
-                url: classURL+"/quizzes"
+                url: classURL+"/quiz/"
             }
 
             const side: sidebarItem = {
