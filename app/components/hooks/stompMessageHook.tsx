@@ -11,39 +11,24 @@ interface StompMessage {
 
 
 
-export function useStompWithSend() {
+export function useStompWithSend(authToken: string) {
     const [messages, setMessages] = useState<StudentQuizAttempt[]>([]);
     const [quiz, setQuiz] = useState<StudentQuizAttempt | null>(null);
     const [client, setClient] = useState<Client | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        console.log("create client...")
+        console.log("create client...", authToken);
         // Create a STOMP client
         const stompClient = new Client({
-            brokerURL: "ws://localhost:8080/ws",
-            webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+            brokerURL: "wss://localhost:8080/ws",
+            webSocketFactory: () => new SockJS("http://localhost:8080/ws", ),
+            connectHeaders: {
+                Authorization: `Bearer ${authToken}` // Send JWT in headers
+            },
             debug: (str: string) => console.log(str), // Debug logs
             onConnect: () => {
                 console.log("Connected to STOMP");
-
-                // Subscribe to a topic
-                // stompClient.subscribe("/topic/event", (message: IMessage) => {
-                //     try {
-                //         // Parse the message body
-                //         const parsedMessage = JSON.parse(message.body);
-                //
-                //         // Extract the `body` field and cast it to `EventDetails`
-                //         const eventDetails = parsedMessage.body as EventDetails;
-                //
-                //         // Update the state with the extracted `EventDetails`
-                //         // setMessages((prev) => [...prev, eventDetails]);
-                //         // setQuiz(eventDetails);
-                //         console.log(eventDetails);
-                //     } catch (error) {
-                //         console.error("Error processing message:", error);
-                //     }
-                // });
 
                 stompClient.subscribe("/topic/event", (message: IMessage) => {
                     try {
@@ -60,7 +45,7 @@ export function useStompWithSend() {
                     } catch (error) {
                         console.error("Error processing message:", error);
                     }
-                });
+                }, {Authorization: `Bearer ${authToken}`});
 
                 setIsConnected(true);
             },
@@ -80,15 +65,14 @@ export function useStompWithSend() {
 
     // Send a message to the server
     const sendStart = (message: EventDetails) => {
-        console.log(message);
         if (client) {
-            // client.publish({
-            //     destination: "/app/send",
-            //     body: JSON.stringify(message),
-            // });
+
             client.publish({
                 destination: "/app/startQuiz",
                 body: JSON.stringify(message),
+                headers:{
+                    Authorization: `Bearer ${authToken}`
+                }
             });
         } else {
             console.error("STOMP client is not connected");
@@ -98,10 +82,7 @@ export function useStompWithSend() {
     const sendMessage = (message: EventDetails) => {
         console.log(message);
         if (client) {
-            // client.publish({
-            //     destination: "/app/send",
-            //     body: JSON.stringify(message),
-            // });
+
             client.publish({
                 destination: "/app/send",
                 body: JSON.stringify(message),

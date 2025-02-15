@@ -29,10 +29,9 @@ export default function QuizPage() {
             sendStart({
                 genericEvent: {
                     type: "QuizEvent",
-                    event: "OPEN_QUIZ"
+                    event: "START_QUIZ"
                 },
                 quizUUID: params.quizUUID as string,
-                studentUUID: "04474476-0204-4761-a110-495543d1e7a7",
                 questionUUID: "",
                 additionalData: {}
             });
@@ -45,7 +44,6 @@ export default function QuizPage() {
                 event: "TOGGLE_FLAG"
             },
             quizUUID: params.quizUUID as string,
-            studentUUID: "04474476-0204-4761-a110-495543d1e7a7",
             questionUUID: questionUUID,
             additionalData: {}
         });
@@ -58,14 +56,6 @@ export default function QuizPage() {
     }, [isConnected]); // Trigger only when `isConnected` changes to `true`
 
     return(
-        // <div>
-        //     <h1>{params.quizUUID}</h1>
-        //     <ul>
-        //         {messages.map((message, index) => (
-        //             <li key={index}>{message.quizTemplateUUID}</li> // Display messages
-        //         ))}
-        //     </ul>
-        // </div>
         (quiz == null ?
         <h1>Quiz Not Received</h1>
             :

@@ -2,7 +2,7 @@ interface EventDetails {
     genericEvent: GenericEvent;
     quizUUID: string; // UUID represented as a string
     questionUUID: string | null; // UUID or null
-    studentUUID: string | null;
+    // studentUUID: string | null;
     additionalData: Record<string, any>; // Arbitrary data storage
 }
 
