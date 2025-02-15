@@ -29,11 +29,15 @@ export function SettingDate(
                         <div className="inline-flex align-middle items-center">
                             <SmartDatetimeInput
                                 // name={dateSetting.id}
-                                value={field.value}
                                 // onChange={field.onChange}
                                 placeholder="e.g. tomorrow at 3pm"
                                 // disabled={(date) => date < new Date()}
-                                onValueChange={field.onChange}
+                                value={field.value ? new Date(field.value) : undefined} // Convert Unix timestamp to Date for the input
+                                onValueChange={(date) => {
+                                    // Convert Date object or null back to a Unix timestamp
+                                    const unixTimestamp = date ? date.getTime() : undefined;
+                                    field.onChange(unixTimestamp);
+                                }}
                             />
                             {dateSetting.tooltip && <SettingTooltip tooltip={dateSetting.tooltip}/>}
                         </div>

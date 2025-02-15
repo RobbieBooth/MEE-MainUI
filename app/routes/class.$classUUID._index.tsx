@@ -62,7 +62,6 @@ export const getUserMap = async (classInfo: Class):Promise<UserMap> => {
     const payload = {
         userUUIDs: uuidList,
     };
-    console.log(payload);
 
     try {
         const response = await fetch("http://localhost:5173/api/user/name", {
@@ -107,7 +106,6 @@ export async function getClassFromBackend(classUUID: string, user: OAuthUser) {
     }
     const jsonResponse = await response.json()
     const classData: Class = jsonResponse;
-    console.log("Json response:",jsonResponse);
 
     return classData;
 }
@@ -199,7 +197,6 @@ export default function Dashboard() {
 
 function getUsersName(userDetailMap: UserMap, uuid:string) {
     const userDetail = userDetailMap.get(uuid);
-    console.log(userDetailMap);
     if (!userDetail) {
         return "UNKNOWN";
     }

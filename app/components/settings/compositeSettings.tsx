@@ -380,7 +380,7 @@ export function updateSettingData(setting:BaseSetting, newValue:any) {
         case SettingType.Date:
             // eslint-disable-next-line no-case-declarations
             const dateSetting = setting as DateSetting;
-            dateSetting.unixTimestamp = newValue;//TODO this may be Date object not number
+            dateSetting.unixTimestamp = newValue;
             return dateSetting;
         case SettingType.Group:
             // eslint-disable-next-line no-case-declarations

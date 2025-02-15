@@ -250,13 +250,6 @@ const defaultAvailableQuizForm:BaseSetting[] = [
     instantResultToggle
 ];
 
-interface classFormFields {
-    id?: string;
-    className: string;
-    classDescription: string;
-    classEducatorEmails: string[];
-    classStudentEmails: string[]
-}
 
 export function AvailableQuizForm(
     {
@@ -276,6 +269,7 @@ export function AvailableQuizForm(
     const methods = useForm();
     const {reset, handleSubmit, control, register, setValue } = methods;
     const [open, setOpen] = useState(false);
+    const [availableQuizID, setAvailableQuizID] = useState<string>(uuidv4());
 
     function updateSettings() {
         let selectedQuizID:string | undefined;
@@ -298,6 +292,8 @@ export function AvailableQuizForm(
         let instantResult = true;
 
         if(availableQuizBeingEdited != null){
+            setAvailableQuizID(availableQuizBeingEdited.id);
+
             selectedQuizID = availableQuizBeingEdited.quizInfo.quizID;
 
             useLatestVersion = availableQuizBeingEdited.useLatestVersion;
@@ -326,6 +322,8 @@ export function AvailableQuizForm(
             infiniteAttempts = availableQuizBeingEdited.maxAttemptCount;
 
             instantResult = availableQuizBeingEdited.instantResult;
+        }else{
+            setAvailableQuizID(uuidv4());
         }
 
         //return default
@@ -413,9 +411,6 @@ export function AvailableQuizForm(
             newAttemptsConditional.children = newAttemptsForm;
         }
 
-
-
-
         const settings = [
             quizSelect,
             studentConditional,
@@ -424,7 +419,6 @@ export function AvailableQuizForm(
             newAttemptsConditional,
             {...instantResultToggle, value:instantResult},
         ];
-        console.log(settings);
 
         setBaseSettings([...settings]);
     }
@@ -456,68 +450,108 @@ export function AvailableQuizForm(
     const saveAvailableQuiz = async (settings:BaseSetting[]) => {
         const quizForm = settings[0] as ConditionalSelectSetting;
         const quizIDArray = quizForm.condition.value;
-        if(quizIDArray == null || quizIDArray.length === 0){
+        if(quizIDArray == null || quizIDArray.length === 0 || quizIDArray[0] === undefined){
             toast.error("Quiz ID must be specified!");
             return;
         }
-        const useLatestVersionSetting = quizForm.groups[quizIDArray[1]];
+        const useLatestVersionSetting = quizForm.groups[quizIDArray[0]];
         const quizID = getQuizIDFromString(quizIDArray[0]);
 
         const latestVersion = (useLatestVersionSetting as ConditionalBoolSetting).condition.value;
         let selectedVersionID:string | null = null;
         if(!latestVersion){
             const versionSelected = ((useLatestVersionSetting  as ConditionalBoolSetting).children as SelectSetting).value;
-            if(versionSelected == null || versionSelected.length === 0){
+            if(versionSelected == null || versionSelected.length === 0 || versionSelected[0] === undefined){
                 toast.error("Version ID must be specified!");
                 return;
             }
             selectedVersionID = getQuizIDFromString(versionSelected[0]);
         }
 
-        const allStudentsSetting = quizForm.groups[quizIDArray[2]];
+        const allStudentsSetting = settings[1];
         const useAllStudents = (allStudentsSetting as ConditionalBoolSetting).condition.value;
         let selectedStudents:string[] | null = null;
         if(!useAllStudents){
             selectedStudents = ((allStudentsSetting  as ConditionalBoolSetting).children as SelectSetting).value ?? [];
         }
 
-        // const openTimeSetting = quizForm.groups[quizIDArray[3]];
-        // const useAllStudents = (allStudentsSetting as ConditionalBoolSetting).condition.value;
-        // let selectedStudents:string[] | null = null;
-        // if(!useAllStudents){
-        //     selectedStudents = ((allStudentsSetting  as ConditionalBoolSetting).children as SelectSetting).value ?? [];
-        // }
+        const openTimeSetting = settings[2];
+        const useOpenTime = (openTimeSetting as ConditionalBoolSetting).condition.value;
+        let openTimeSelected: number | null = null;
+        if(useOpenTime){
+            const openTime = ((openTimeSetting  as ConditionalBoolSetting).children as DateSetting).unixTimestamp;
+            if(openTime == undefined){
+                toast.error("Open Time must be specified!");
+                return;
+            }
+            openTimeSelected = openTime;
+        }
 
+        const closeTimeSetting = settings[3];
+        const useCloseTime = (closeTimeSetting as ConditionalBoolSetting).condition.value;
+        let closeTimeSelected: number | null = null;
+        if(useCloseTime){
+            const closeTime = ((closeTimeSetting  as ConditionalBoolSetting).children as DateSetting).unixTimestamp;
+            if(closeTime == undefined){
+                toast.error("Close Time must be specified!");
+                return;
+            }
+            closeTimeSelected = closeTime;
+        }
 
-        // const payload = {
-        //     // id: classFormFields.id ?? uuidv4(),
-        //     quizID: (settings[0] as InputSetting).value ?? "Unknown Class", // Assuming className is the key
-        //     classDescription: (settings[1] as InputSetting).value ?? "", // Default value if not found
-        //     educatorEmails: (settings[2] as TagInputSetting).value ?? [userEmail], // Default array if not found
-        //     studentEmails: (settings[3]as TagInputSetting).value ?? [], // Default array if not found
-        // };
-        //
-        // try {
-        //     const response = await fetch("/class/api/edit", {
-        //         method: "POST", // Remix action expects POST
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //         },
-        //         body: JSON.stringify(payload),
-        //     });
-        //
-        //     if (!response.ok) {
-        //         throw new Error(`API Error: ${response.status}`);
-        //     }
-        //
-        //     const result = await response.json();
-        //     console.log("Class created/updated successfully:", result);
-        //     toast.success("Class Successfully created/updated");
-        //     setOpen(false);//close dialog
-        // } catch (error) {
-        //     console.error("Error calling class API:", error);
-        //     toast.error("Error creating class");
-        // }
+        const attemptsSetting = settings[4];
+        const infiniteAttempts = (attemptsSetting as ConditionalBoolSetting).condition.value;
+        let attemptsCount: number | null = null;
+        if(!infiniteAttempts){
+            const attemptsCountString = ((attemptsSetting  as ConditionalBoolSetting).children as InputSetting).value;
+
+            //Attempt to convert the value to a number
+            const attemptCountInt = parseInt(attemptsCountString);
+
+            //Check if the result is not a number
+            if (isNaN(attemptCountInt)) {
+                toast.error("Attempt count must be a whole number!");
+                return;
+            }
+            attemptsCount = attemptCountInt;
+        }
+
+        const instantResult = (settings[5] as ToggleSetting).value;
+
+        const payload = {
+            id: availableQuizID,
+            quizID: quizID,
+            versionID: latestVersion ? null : selectedVersionID,
+            useLatestVersion: latestVersion,
+            studentsAvailableTo: useAllStudents ? null : selectedStudents,
+            startTime: !useOpenTime ? null : openTimeSelected,
+            closeTime: !useCloseTime ? null : closeTimeSelected,
+            maxAttemptCount: infiniteAttempts ? null : attemptsCount,
+            instantResult: instantResult,
+        };
+
+        try {
+            const response = await fetch(`http://localhost:8080/v1/api/class/${currentClass.id}/quiz/available/save`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.backendJWT}`
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log("Available quiz created successfully successfully:", result);
+            toast.success("Available quiz successfully created/updated");
+            setOpen(false);//close dialog
+        } catch (error) {
+            console.error("Error creating available quiz:", error);
+            toast.error("Error creating available quiz");
+        }
     };
 
     const openChange = (open: boolean) =>{
