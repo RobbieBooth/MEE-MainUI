@@ -472,7 +472,10 @@ export function AvailableQuizForm(
         const useAllStudents = (allStudentsSetting as ConditionalBoolSetting).condition.value;
         let selectedStudents:string[] | null = null;
         if(!useAllStudents){
-            selectedStudents = ((allStudentsSetting  as ConditionalBoolSetting).children as SelectSetting).value ?? [];
+            const studentsSubmittedToForm = ((allStudentsSetting  as ConditionalBoolSetting).children as SelectSetting).value ?? [];
+
+            //extract ids from students
+            selectedStudents = studentsSubmittedToForm.map((student) => getQuizIDFromString(student));
         }
 
         const openTimeSetting = settings[2];
