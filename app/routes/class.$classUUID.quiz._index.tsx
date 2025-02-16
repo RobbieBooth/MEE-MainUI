@@ -7,6 +7,7 @@ import {Class, getClassFromBackend, getUserMap, UserMap} from "~/routes/class.$c
 import {MySidebar} from "~/routes/dashboard";
 import {Button} from "~/components/ui/button";
 import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQuizForm";
+import {AvailableQuizTable} from "~/components/quizSection/quizDisplayPage";
 
 export const loader: LoaderFunction = async ({ request, params }):Promise<{ user: OAuthUser; classUUID: string, classData:Class }> => {
     const { classUUID } = params;
@@ -46,6 +47,8 @@ export default function SettingPage(){
             {isLoadingUserDetailMap ? "Loading..." :
                 <AvailableQuizForm  currentClass={classData} user={user} userMap={userDetailMap!}/>
             }
+
+            <AvailableQuizTable availableQuizzes={classData.availableQuizzes} user={user} classID={classUUID} isEducator={false}/>
 
         </MySidebar>
     );

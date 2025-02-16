@@ -10,53 +10,9 @@ import {
 } from "~/components/ui/table"
 import {Button} from "~/components/ui/button";
 import {useNavigate} from "react-router";
-
-const invoices = [
-    {
-        invoice: "INV001",
-        paymentStatus: "Paid",
-        totalAmount: "$250.00",
-        paymentMethod: "Credit Card",
-    },
-    {
-        invoice: "INV002",
-        paymentStatus: "Pending",
-        totalAmount: "$150.00",
-        paymentMethod: "PayPal",
-    },
-    {
-        invoice: "INV003",
-        paymentStatus: "Unpaid",
-        totalAmount: "$350.00",
-        paymentMethod: "Bank Transfer",
-    },
-    {
-        invoice: "INV004",
-        paymentStatus: "Paid",
-        totalAmount: "$450.00",
-        paymentMethod: "Credit Card",
-    },
-    {
-        invoice: "INV005",
-        paymentStatus: "Paid",
-        totalAmount: "$550.00",
-        paymentMethod: "PayPal",
-    },
-    {
-        invoice: "INV006",
-        paymentStatus: "Pending",
-        totalAmount: "$200.00",
-        paymentMethod: "Bank Transfer",
-    },
-    {
-        invoice: "INV007",
-        paymentStatus: "Unpaid",
-        totalAmount: "$300.00",
-        paymentMethod: "Credit Card",
-    },
-]
-
-
+import {AvailableQuiz} from "~/routes/class.$classUUID._index";
+import {Infinity} from "lucide-react";
+import {OAuthUser} from "~/auth.server";
 
 export function QuizTable({tableTitle, uuids, buttonTitle, buttonClickFunction}:{ tableTitle:string, uuids:string[], buttonTitle:string, buttonClickFunction:(uuid:string) => void}) {
     // const navigate = useNavigate();
@@ -81,6 +37,64 @@ export function QuizTable({tableTitle, uuids, buttonTitle, buttonClickFunction}:
                         {/*<TableCell><Button onClick={()=>handleGoToQuiz(uuid)}>{buttonTitle}</Button></TableCell>*/}
                     </TableRow>
                 ))}
+            </TableBody>
+        </Table>
+    )
+}
+
+export function AvailableQuizTable({classID, user, availableQuizzes, isEducator}:{ classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean}) {
+    const navigate = useNavigate();
+
+    const handleGoToQuiz = (uuid:string) => {
+        navigate(`/class/${classID}/quiz/${uuid}`);
+    };
+
+    return (
+        <Table>
+            <TableCaption>Available Quizzes</TableCaption>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className="">Quiz ID</TableHead>
+                    <TableHead className="">Quiz Name</TableHead>
+                    <TableHead className="">Question Count</TableHead>
+                    <TableHead className="">Max Attempts</TableHead>
+                    {!isEducator && <TableHead className="text-right">Start Quiz</TableHead>}
+                    {isEducator && <TableHead className="text-right">Edit Quiz</TableHead>}
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {availableQuizzes.map((quiz) => {
+                    const userID = user.associatedDBUser!._id;
+
+                    const studentsAttemptsAtQuiz =!isEducator ? quiz.studentAttempts.reduce((total, attempt) => {
+                        return attempt.studentAttemptId === userID ? total + 1 : total;
+                    }, 0)
+                    :
+                    0
+                    ;
+
+                    const studentMaxAttemptsReached = quiz.maxAttemptCount != undefined && (quiz.maxAttemptCount - studentsAttemptsAtQuiz) <= 0;
+                    console.log(studentMaxAttemptsReached);
+
+                    return (<TableRow key={quiz.id}>
+                            <TableCell className="font-medium">{quiz.quizInfo.quizID}</TableCell>
+                            <TableCell className="font-medium">{quiz.quizInfo.quizName}</TableCell>
+                            <TableCell className="font-medium">{quiz.quizInfo.questionCount}</TableCell>
+                            <TableCell className="font-medium">{quiz.maxAttemptCount == undefined ?
+                                <Infinity/> : `${studentsAttemptsAtQuiz} / ${quiz.maxAttemptCount}`}</TableCell>
+                            {!isEducator &&
+                                <TableCell className="text-right"><Button onClick={() => handleGoToQuiz(quiz.id)}
+                                                                          disabled={studentMaxAttemptsReached}>
+                                    Start Quiz
+                                </Button></TableCell>}
+                            {isEducator &&
+                                <TableCell className="text-right"><Button onClick={() => handleGoToQuiz(quiz.id)}>Edit
+                                    Quiz</Button></TableCell>}
+                            {/*<TableCell><Button onClick={()=>handleGoToQuiz(uuid)}>{buttonTitle}</Button></TableCell>*/}
+                        </TableRow>
+                    );
+                })
+                }
             </TableBody>
         </Table>
     )
