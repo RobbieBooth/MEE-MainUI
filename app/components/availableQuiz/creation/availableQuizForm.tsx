@@ -256,12 +256,14 @@ export function AvailableQuizForm(
         currentClass,
         userMap,
         user,
-        availableQuizBeingEdited
+        availableQuizBeingEdited,
+        updateClass
     }:{
         currentClass:Class,
         userMap:UserMap,
         user:OAuthUser,
-        availableQuizBeingEdited?:AvailableQuiz
+        availableQuizBeingEdited?:AvailableQuiz,
+        updateClass: (classBeingUpdated: Class) => void,
     }
 ) {
     const [baseSettings, setBaseSettings] = useState<BaseSetting[]>(defaultAvailableQuizForm);
@@ -550,6 +552,7 @@ export function AvailableQuizForm(
             const result = await response.json();
             console.log("Available quiz created successfully successfully:", result);
             toast.success("Available quiz successfully created/updated");
+            updateClass(result);
             setOpen(false);//close dialog
         } catch (error) {
             console.error("Error creating available quiz:", error);

@@ -26,6 +26,8 @@ export default function SettingPage(){
     const [userDetailMap, setUserDetailMap] = useState<UserMap>();
     const [isLoadingUserDetailMap, setIsLoadingUserDetailMap] = useState<boolean>(true);
     const { user, classUUID, classData } = useLoaderData<typeof loader>() as {user: OAuthUser, classUUID: string, classData:Class};
+    const [classDataHolder, setClassDataHolder] = useState<Class>();
+    //TODO add class data seperately and update in use effect or on available quiz form
 
     useEffect(() => {
         const fetchUserMap = async () => {
@@ -35,6 +37,7 @@ export default function SettingPage(){
         };
 
         fetchUserMap();
+        setClassDataHolder(classData);
     }, [classData]);
 
     return (
@@ -44,12 +47,13 @@ export default function SettingPage(){
                     Create Quiz
                 </a>
             </Button>
-            {isLoadingUserDetailMap ? "Loading..." :
-                <AvailableQuizForm  currentClass={classData} user={user} userMap={userDetailMap!}/>
+            {isLoadingUserDetailMap || classDataHolder == undefined ? "Loading..." :
+                <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder}/>
             }
 
-            <AvailableQuizTable availableQuizzes={classData.availableQuizzes} user={user} classID={classUUID} isEducator={false}/>
-
+            {classDataHolder == undefined ? "Loading... Class Data" :
+                <AvailableQuizTable availableQuizzes={classDataHolder.availableQuizzes} user={user} classID={classUUID} isEducator={false}/>
+            }
         </MySidebar>
     );
 }

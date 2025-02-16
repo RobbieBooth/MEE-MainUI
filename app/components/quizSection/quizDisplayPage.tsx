@@ -74,7 +74,6 @@ export function AvailableQuizTable({classID, user, availableQuizzes, isEducator}
                     ;
 
                     const studentMaxAttemptsReached = quiz.maxAttemptCount != undefined && (quiz.maxAttemptCount - studentsAttemptsAtQuiz) <= 0;
-                    console.log(studentMaxAttemptsReached);
 
                     return (<TableRow key={quiz.id}>
                             <TableCell className="font-medium">{quiz.quizInfo.quizID}</TableCell>
