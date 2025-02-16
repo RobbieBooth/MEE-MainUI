@@ -27,7 +27,6 @@ export default function SettingPage(){
     const [isLoadingUserDetailMap, setIsLoadingUserDetailMap] = useState<boolean>(true);
     const { user, classUUID, classData } = useLoaderData<typeof loader>() as {user: OAuthUser, classUUID: string, classData:Class};
     const [classDataHolder, setClassDataHolder] = useState<Class>();
-    //TODO add class data seperately and update in use effect or on available quiz form
 
     useEffect(() => {
         const fetchUserMap = async () => {
