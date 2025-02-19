@@ -59,13 +59,15 @@ export default function QuizPage() {
         (quiz == null ?
         <h1>Quiz Not Received</h1>
             :
-            <QuizDisplay studentQuizAttempt={quiz} toggleFlagFunction={toggleFlag}/>
+            <QuizDisplay leaveQuizURL={"/quiz/"} studentQuizAttempt={quiz} toggleFlagFunction={toggleFlag}/>
         )
 
     );
 }
 
-function QuizDisplay({studentQuizAttempt, toggleFlagFunction}:{studentQuizAttempt:StudentQuizAttempt, toggleFlagFunction:(questionUUID:string)=>void}) {
+
+
+export function QuizDisplay({studentQuizAttempt, leaveQuizURL, toggleFlagFunction}:{studentQuizAttempt:StudentQuizAttempt, leaveQuizURL:string, toggleFlagFunction:(questionUUID:string)=>void}) {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [iframeLoaded, setIframeLoaded] = useState(false); // Track iframe load state
     const [currentQuestion, setCurrentQuestion] = React.useState(studentQuizAttempt.questions[0]);
@@ -114,7 +116,7 @@ function QuizDisplay({studentQuizAttempt, toggleFlagFunction}:{studentQuizAttemp
     return (
         <div>
             <SidebarProvider defaultOpen={true}>
-                <AppSidebar questions={studentQuizAttempt.questions} currentQuestion={currentQuestion} setCurrentQuestion={setCurrentQuestion} setFlagged={setFlagged}/>
+                <AppSidebar leaveQuizURL={leaveQuizURL} questions={studentQuizAttempt.questions} currentQuestion={currentQuestion} setCurrentQuestion={setCurrentQuestion} setFlagged={setFlagged}/>
                 <main className="w-full flex flex-col h-screen">
                     <div>
                         <SidebarTrigger/>
