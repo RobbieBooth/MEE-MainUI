@@ -67,11 +67,12 @@ export function AvailableQuizTable({classID, user, availableQuizzes, isEducator}
                     const userID = user.associatedDBUser!._id;
 
                     const studentsAttemptsAtQuiz =!isEducator ? quiz.studentAttempts.reduce((total, attempt) => {
-                        return attempt.studentAttemptId === userID ? total + 1 : total;
+                        return attempt.studentID === userID ? total + 1 : total;
                     }, 0)
                     :
                     0
                     ;
+
 
                     const studentMaxAttemptsReached = quiz.maxAttemptCount != undefined && (quiz.maxAttemptCount - studentsAttemptsAtQuiz) <= 0;
 
