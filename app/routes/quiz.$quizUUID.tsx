@@ -29,51 +29,51 @@ export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUse
 };
 
 
-export default function QuizPage() {
-    const { user } = useLoaderData<typeof loader>() as {user: OAuthUser};
-    const params = useParams();
-    const { messages, sendStart, sendMessage, isConnected, quiz } = useStompWithSend(user.backendJWT!);
-
-    const handleSubmit = () => {
-            sendStart({
-                genericEvent: {
-                    type: "QuizEvent",
-                    event: "START_QUIZ"
-                },
-                quizUUID: params.quizUUID as string,
-                questionUUID: "",
-                additionalData: {}
-            });
-        };
-
-    const toggleFlag = (questionUUID: string) => {
-        sendMessage({
-            genericEvent: {
-                type: "QuestionEvent",
-                event: "TOGGLE_FLAG"
-            },
-            quizUUID: params.quizUUID as string,
-            questionUUID: questionUUID,
-            additionalData: {}
-        });
-    }
-
-    useEffect(() => {
-        if (isConnected) {
-            handleSubmit();
-        }
-    }, [isConnected]); // Trigger only when `isConnected` changes to `true`
-
-    return(
-        (quiz == null ?
-        <h1>Quiz Not Received</h1>
-            :
-            // <QuizDisplay leaveQuizURL={"/quiz/"} studentQuizAttempt={quiz}/>
-            <h1>Wrong link mate...</h1>
-        )
-
-    );
-}
+// export default function QuizPage() {
+//     const { user } = useLoaderData<typeof loader>() as {user: OAuthUser};
+//     const params = useParams();
+//     // const { messages, sendStart, sendMessage, isConnected, quiz } = useStompWithSend(user.backendJWT!);
+//
+//     const handleSubmit = () => {
+//             sendStart({
+//                 genericEvent: {
+//                     type: "QuizEvent",
+//                     event: "START_QUIZ"
+//                 },
+//                 quizUUID: params.quizUUID as string,
+//                 questionUUID: "",
+//                 additionalData: {}
+//             });
+//         };
+//
+//     const toggleFlag = (questionUUID: string) => {
+//         sendMessage({
+//             genericEvent: {
+//                 type: "QuestionEvent",
+//                 event: "TOGGLE_FLAG"
+//             },
+//             quizUUID: params.quizUUID as string,
+//             questionUUID: questionUUID,
+//             additionalData: {}
+//         });
+//     }
+//
+//     useEffect(() => {
+//         if (isConnected) {
+//             handleSubmit();
+//         }
+//     }, [isConnected]); // Trigger only when `isConnected` changes to `true`
+//
+//     return(
+//         (quiz == null ?
+//         <h1>Quiz Not Received</h1>
+//             :
+//             // <QuizDisplay leaveQuizURL={"/quiz/"} studentQuizAttempt={quiz}/>
+//             <h1>Wrong link mate...</h1>
+//         )
+//
+//     );
+// }
 
 
 
@@ -81,7 +81,7 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [iframeLoaded, setIframeLoaded] = useState(false); // Track iframe load state
     const [currentQuestion, setCurrentQuestion] = React.useState(studentQuizAttempt.questions[0]);
-    const { messages, sendStart, sendMessage, isConnected} = useStompWithSend(user.backendJWT!);
+    const { messages, sendStart, sendMessage, isConnected} = useStompWithSend(user.backendJWT!, studentQuizAttempt.studentQuizAttemptUUID);
     const navigator = useNavigate();
 
 

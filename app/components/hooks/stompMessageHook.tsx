@@ -12,7 +12,7 @@ interface StompMessage {
 
 
 
-export function useStompWithSend(authToken: string) {
+export function useStompWithSend(authToken: string, studentQuizAttemptID:string) {
     const [messages, setMessages] = useState<StudentQuizAttempt[]>([]);
     const [quiz, setQuiz] = useState<StudentQuizAttempt | null>(null);
     const [client, setClient] = useState<Client | null>(null);
@@ -31,7 +31,7 @@ export function useStompWithSend(authToken: string) {
             onConnect: () => {
                 console.log("Connected to STOMP");
 
-                stompClient.subscribe("/topic/event", (message: IMessage) => {
+                stompClient.subscribe(`/quiz/${studentQuizAttemptID}/event`, (message: IMessage) => {
                     try {
                         // Parse the message body
                         const parsedMessage = JSON.parse(message.body);
