@@ -57,7 +57,7 @@ export default function Page(){
     }
 
     return(
-        <QuizDisplay studentQuizAttempt={quiz} toggleFlagFunction={(value)=>{}} leaveQuizURL={`/class/${classUUID}/quiz/`}/>
+        <QuizDisplay studentQuizAttempt={quiz} user={user} leaveQuizURL={`/class/${classUUID}/quiz/`}/>
     );
 
 }

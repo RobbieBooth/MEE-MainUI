@@ -9,6 +9,7 @@ import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQu
 import {AvailableQuizTable} from "~/components/quizSection/quizDisplayPage";
 import {StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
 import {QuizDisplay} from "~/routes/quiz.$quizUUID";
+import {useStompWithSend} from "~/components/hooks/stompMessageHook";
 
 export const loader: LoaderFunction = async ({ request, params }):Promise<{ user: OAuthUser; classUUID: string, availableQuizUUID:string }> => {
     const { classUUID, availableQuizUUID } = params;
@@ -56,6 +57,8 @@ export default function Page(){
         createQuiz();
     }, [availableQuizUUID]);
 
+
+
     if(isCreatingQuiz && error == null){
         return <div><p>Creating Quiz...</p></div>;
     }
@@ -64,7 +67,7 @@ export default function Page(){
     }
 
     return(
-        <QuizDisplay leaveQuizURL={`/class/${classUUID}/quiz/`} studentQuizAttempt={quiz} toggleFlagFunction={(value)=>{}}/>
+        <QuizDisplay leaveQuizURL={`/class/${classUUID}/quiz/`} studentQuizAttempt={quiz} user={user}/>
     );
 
 }

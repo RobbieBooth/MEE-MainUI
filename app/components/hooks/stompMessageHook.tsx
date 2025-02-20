@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import {StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
+import {EventDetails} from "~/components/quizSection/quizEventTypes";
 
 // Define the structure of your messages
 interface StompMessage {
@@ -86,6 +87,9 @@ export function useStompWithSend(authToken: string) {
             client.publish({
                 destination: "/app/send",
                 body: JSON.stringify(message),
+                headers:{
+                    Authorization: `Bearer ${authToken}`
+                }
             });
         } else {
             console.error("STOMP client is not connected");

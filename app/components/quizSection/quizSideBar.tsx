@@ -34,14 +34,14 @@ export function FlagManager({isFlagged, setFlagged}:{ isFlagged:boolean, setFlag
     </TooltipProvider>);
 }
 
-export function AppSidebar({leaveQuizURL, questions, currentQuestion, setCurrentQuestion, setFlagged}: {leaveQuizURL:string, questions: Question[], currentQuestion: Question, setCurrentQuestion: (question: Question) => void, setFlagged: (question: Question, flag:boolean) => void} ){
+export function AppSidebar({leaveQuizFN, questions, currentQuestion, setCurrentQuestion, setFlagged}: {leaveQuizFN:()=>void, questions: Question[], currentQuestion: Question, setCurrentQuestion: (question: Question) => void, setFlagged: (question: Question, flag:boolean) => void} ){
     return (
         <Sidebar className="h-screen">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem key={"LeaveQuiz"}>
                         <SidebarMenuButton asChild>
-                            <a href={leaveQuizURL}>
+                            <a onClick={leaveQuizFN}>
                                 <LogOut className="rotate-180" />
                                 <span>Leave Quiz</span>
                             </a>
