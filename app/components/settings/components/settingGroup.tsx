@@ -18,7 +18,7 @@ export function SettingGroup({
     setValue: any,
 }): JSX.Element {
     return (
-            <fieldset key={groupSetting.id} className="space-x-3 space-y-0 rounded-md border p-4">
+            <fieldset key={groupSetting.id} className={groupSetting.haveBorder ? "space-x-3 space-y-0 rounded-md border p-4" : ""}>
                 <GroupTitle label={groupSetting.label} tooltip={groupSetting.tooltip}/>
                 <div className="flex flex-wrap gap-3"> {/* Use flexbox with gap for consistent spacing */}
                     {groupSetting.children.map((childSetting) =>

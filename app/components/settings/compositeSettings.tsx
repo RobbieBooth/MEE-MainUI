@@ -126,6 +126,7 @@ export interface DateSetting extends BaseSetting {
 export interface GroupSetting extends BaseSetting {
     type: SettingType.Group;
     children: BaseSetting[];
+    haveBorder?: boolean,
 }
 
 // Composite: SettingList
@@ -137,6 +138,7 @@ export interface ListSetting extends BaseSetting {
     maxAmount: number | null; // Null = no max
     minAmount: number | null; // Null = no min
     settingToAdd: BaseSetting;
+    haveBorder?: boolean;
 }
 
 // Composite: ConditionalSetting
@@ -288,6 +290,7 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 ...json,
                 id: settingUUID,
                 type: SettingType.Group,
+                haveBorder: json.haveBorder ?? true,
                 children: json.children.map((child: any) => castToBaseSetting(child)),
             } as GroupSetting;
 
@@ -302,6 +305,7 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 maxAmount: json.maxAmount,
                 minAmount: json.minAmount,
                 settingToAdd: json.settingToAdd,
+                haveBorder: json.haveBorder ?? true,
             } as ListSetting;
 
         case SettingType.ConditionalBool:
