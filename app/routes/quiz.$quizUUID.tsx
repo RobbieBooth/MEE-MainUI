@@ -102,7 +102,7 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
     const sendMessageToIframe = () => {
         // Ensure the iframe reference is valid
         if (iframeRef.current?.contentWindow) {
-            iframeRef.current.contentWindow.postMessage({ type: "SEND_DATA", payload: currentQuestion.studentQuestionAttemptUUID}, "*");
+            iframeRef.current.contentWindow.postMessage({ type: "SEND_DATA", payload: JSON.stringify({additionalData: {...currentQuestion.additionalData, isSubmitted: false}, settings: currentQuestion.settings, questionID: currentQuestion.studentQuestionAttemptUUID})}, "*");
         }
     };
 
@@ -231,13 +231,18 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
                         <button onClick={requestDataFromIframe}>Request Data from Iframe</button>
                         <button onClick={sendMessageToIframe}>Send Data to Iframe</button>
                         {/*<iframe title={currentQuestion.moduleName} className="grow w-full h-full border-none" src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}/>*/}
+                        {/*<iframe ref={iframeRef} title={currentQuestion.moduleName}*/}
+                        {/*        className="grow w-full h-full border-none" src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}*/}
+                        {/*        onLoad={() => setIframeLoaded(true)} // Set iframeLoaded to true when iframe loads*/}
+                        {/*/>*/}
                         <iframe ref={iframeRef} title={currentQuestion.moduleName}
-                                className="grow w-full h-full border-none" src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}
+                                className="grow w-full h-full border-none"
+                                src={`http://localhost:5174/`}
                                 onLoad={() => setIframeLoaded(true)} // Set iframeLoaded to true when iframe loads
                         />
                     </div>
                     <div className="flex self-end gap-4 px-4 pb-4 mt-2">
-                    <Button onClick={() => saveQuestion(currentQuestion)}>Save</Button>
+                        <Button onClick={() => saveQuestion(currentQuestion)}>Save</Button>
                         <Button onClick={() => submitQuestion(currentQuestion)}>Submit</Button>
                     </div>
                     <div className="flex justify-between self-end w-full pb-4 px-4">

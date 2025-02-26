@@ -4,6 +4,8 @@ interface Question {
 }
 
 export interface StudentQuestionAttempt extends Question {
+    settings: any,
+    additionalData:any,
     studentQuestionAttemptUUID: string; // UUID for the student question attempt
     flagged: boolean; // Flagged status of the question attempt
 }
