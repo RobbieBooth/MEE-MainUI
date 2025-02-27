@@ -1,7 +1,7 @@
 import {LoaderFunction} from "@remix-run/node";
 import {authenticate, OAuthUser} from "~/auth.server";
 import React, {useEffect, useState} from "react";
-import {StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
+import {StudentQuestionAttempt, StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
 import {useLoaderData} from "@remix-run/react";
 import {QuizDisplay} from "~/routes/quiz.$quizUUID";
 
@@ -49,6 +49,24 @@ export default function Page(){
         getQuiz();
     }, [availableQuizUUID, studentAttemptUUID]);
 
+    const updateQuestionCallback = (newStudentQuestionAttempt:StudentQuestionAttempt)=>{
+        const newQuiz = quiz;
+        if(quiz === undefined) {
+            throw Error("Quiz is undefined and question update called");
+
+        }
+
+        //Update the question that we have update call from
+        newQuiz!.questions = newQuiz!.questions.map((question) => {
+            if (question.studentQuestionAttemptUUID === newStudentQuestionAttempt.studentQuestionAttemptUUID) {
+                return newStudentQuestionAttempt;
+            }
+            return question;
+        });
+
+        setQuiz(newQuiz);
+    }
+
     if(isLoadingQuiz && error == null){
         return <div><p>Loading Quiz...</p></div>;
     }
@@ -57,7 +75,7 @@ export default function Page(){
     }
 
     return(
-        <QuizDisplay studentQuizAttempt={quiz} user={user} leaveQuizURL={`/class/${classUUID}/quiz/`}/>
+        <QuizDisplay studentQuizAttempt={quiz} user={user} leaveQuizURL={`/class/${classUUID}/quiz/`} updateQuizQuestion={updateQuestionCallback}/>
     );
 
 }

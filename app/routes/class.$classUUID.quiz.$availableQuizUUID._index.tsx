@@ -7,7 +7,7 @@ import {MySidebar} from "~/routes/dashboard";
 import {Button} from "~/components/ui/button";
 import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQuizForm";
 import {AvailableQuizTable} from "~/components/quizSection/quizDisplayPage";
-import {StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
+import {StudentQuestionAttempt, StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
 import {QuizDisplay} from "~/routes/quiz.$quizUUID";
 import {useStompWithSend} from "~/components/hooks/stompMessageHook";
 
@@ -57,7 +57,23 @@ export default function Page(){
         createQuiz();
     }, [availableQuizUUID]);
 
+    const updateQuestionCallback = (newStudentQuestionAttempt:StudentQuestionAttempt)=>{
+        const newQuiz = quiz;
+        if(quiz === undefined) {
+            throw Error("Quiz is undefined and question update called");
 
+        }
+
+        //Update the question that we have update call from
+        newQuiz!.questions = newQuiz!.questions.map((question) => {
+            if (question.studentQuestionAttemptUUID === newStudentQuestionAttempt.studentQuestionAttemptUUID) {
+                return newStudentQuestionAttempt;
+            }
+            return question;
+        });
+
+        setQuiz(newQuiz);
+    }
 
     if(isCreatingQuiz && error == null){
         return <div><p>Creating Quiz...</p></div>;
@@ -67,7 +83,7 @@ export default function Page(){
     }
 
     return(
-        <QuizDisplay leaveQuizURL={`/class/${classUUID}/quiz/`} studentQuizAttempt={quiz} user={user}/>
+        <QuizDisplay leaveQuizURL={`/class/${classUUID}/quiz/`} studentQuizAttempt={quiz} user={user} updateQuizQuestion={updateQuestionCallback}/>
     );
 
 }

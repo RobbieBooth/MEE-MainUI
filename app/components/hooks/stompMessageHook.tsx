@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import {StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
+import {StudentQuestionAttempt, StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
 import {EventDetails} from "~/components/quizSection/quizEventTypes";
 
 // Define the structure of your messages
@@ -12,7 +12,7 @@ interface StompMessage {
 
 
 
-export function useStompWithSend(authToken: string, studentQuizAttemptID:string) {
+export function useStompWithSend(authToken: string, studentQuizAttemptID:string, updateQuestionCallBack: (message: StudentQuestionAttempt) => void) {
     const [messages, setMessages] = useState<StudentQuizAttempt[]>([]);
     const [quiz, setQuiz] = useState<StudentQuizAttempt | null>(null);
     const [client, setClient] = useState<Client | null>(null);
@@ -37,11 +37,9 @@ export function useStompWithSend(authToken: string, studentQuizAttemptID:string)
                         const parsedMessage = JSON.parse(message.body);
 
                         // Extract the `body` field and cast it to `EventDetails`
-                        const eventDetails = parsedMessage.body as StudentQuizAttempt;
+                        const eventDetails = parsedMessage as StudentQuestionAttempt;
 
-                        // Update the state with the extracted `EventDetails`
-                        // setMessages((prev) => [...prev, eventDetails]);
-                        setQuiz(eventDetails);
+                        updateQuestionCallBack(eventDetails);
                         console.log(eventDetails);
                     } catch (error) {
                         console.error("Error processing message:", error);

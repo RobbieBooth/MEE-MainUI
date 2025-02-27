@@ -1,4 +1,3 @@
-import {useLoaderData, useParams} from "@remix-run/react";
 import {useStompWithSend} from "~/components/hooks/stompMessageHook";
 import React, {useEffect, useRef, useState} from "react";
 import {SidebarProvider, SidebarTrigger} from "~/components/ui/sidebar";
@@ -18,6 +17,7 @@ import {
     QuestionClientSideEvent,
     QuizClientSideEvents
 } from "~/components/quizSection/quizEventTypes";
+import {QuestionIFrameReturnType, validateAndConvertPayload} from "~/components/MEETypes/questionIFrameReturnType";
 
 
 export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUser}> => {
@@ -77,49 +77,103 @@ export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUse
 
 
 
-export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQuizAttempt:StudentQuizAttempt, leaveQuizURL:string, user:OAuthUser}) {
+export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQuestion}:{studentQuizAttempt:StudentQuizAttempt, leaveQuizURL:string, user:OAuthUser, updateQuizQuestion:(attempt: StudentQuestionAttempt)=>void}) {
+    const updateQuestionCallback = (message: StudentQuestionAttempt)=>{
+        updateAdditionalData(message.studentQuestionAttemptUUID, message.additionalData);
+        updateQuizQuestion(message);
+        setIsSubmitted(getIsSubmittedFromAdditionalData(message.additionalData));
+        sendMessageToIframe(message.additionalData, message.settings, message.studentQuestionAttemptUUID);
+    }
+
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [iframeLoaded, setIframeLoaded] = useState(false); // Track iframe load state
-    const [currentQuestion, setCurrentQuestion] = React.useState(studentQuizAttempt.questions[0]);
-    const { messages, sendStart, sendMessage, isConnected} = useStompWithSend(user.backendJWT!, studentQuizAttempt.studentQuizAttemptUUID);
+    const [currentQuestion, setCurrentQuestion] = useState(studentQuizAttempt.questions[0]);
+    const { messages, sendStart, sendMessage, isConnected} = useStompWithSend(user.backendJWT!, studentQuizAttempt.studentQuizAttemptUUID, updateQuestionCallback);
+    const [questionToAdditionalData, setQuestionToAdditionalData] = useState<Record<string, Record<string, any>>>({});//The questions Id to its additional data
+    const [isSubmitted, setIsSubmitted] = useState(false);
     const navigator = useNavigate();
 
+    const updateAdditionalData = (currentQuestionID:string, additionalData:Record<string, any>)=> {
+        setQuestionToAdditionalData((previous) => {
+            return {...previous, [currentQuestionID]: additionalData};
+        });
+    }
 
 
-    const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === "FROM_EMBEDDED_PAGE") {
-            console.log("Received data from iframe:", event.data.payload);
-        }
+
+    /**
+     * Requests the `QuestionIFrameReturnType` from the current Iframe and if response is not returned from Iframe in 4 seconds then it fails.
+     */
+    const requestDataFromIframe = (): Promise<QuestionIFrameReturnType> => {
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                window.removeEventListener("message", handleMessage);
+                reject(new Error("Request to iframe timed out after 4 seconds."));
+            }, 4000); //Timeout after 4 seconds
+
+            const handleMessage = (event: MessageEvent) => {
+                if (event.data?.type === "FROM_EMBEDDED_PAGE") {
+                    console.log("Received data from iframe:", event.data.payload);
+                    clearTimeout(timeout); //Clear the timeout since we received a response
+                    window.removeEventListener("message", handleMessage); //Cleanup listener
+
+                    try {
+                        const validatedPayload = validateAndConvertPayload(event.data.payload);
+                        resolve(validatedPayload);
+                    } catch (error) {
+                        reject(error); // Reject if validation fails
+                    }
+                }
+            };
+
+            window.addEventListener("message", handleMessage);
+
+            //Send the request to the iframe for additional data etc
+            if (iframeRef.current?.contentWindow) {
+                iframeRef.current.contentWindow.postMessage({ type: "REQUEST_DATA" }, "*");
+            }
+        });
     };
 
-    // Function to send a request for data to the iframe
-    const requestDataFromIframe = () => {
-        if (iframeRef.current?.contentWindow) {
-            iframeRef.current.contentWindow.postMessage({ type: "REQUEST_DATA" }, "*");
-        }
-    };
 
-    const sendMessageToIframe = () => {
+    // // Function to send a request for data to the iframe
+    // const requestDataFromIframe = () => {
+    //     if (iframeRef.current?.contentWindow) {
+    //         iframeRef.current.contentWindow.postMessage({ type: "REQUEST_DATA" }, "*");
+    //     }
+    // };
+
+    const sendCurrentQuestionToIframe = () => {
         // Ensure the iframe reference is valid
         if (iframeRef.current?.contentWindow) {
-            iframeRef.current.contentWindow.postMessage({ type: "SEND_DATA", payload: JSON.stringify({additionalData: {...currentQuestion.additionalData, isSubmitted: false}, settings: currentQuestion.settings, questionID: currentQuestion.studentQuestionAttemptUUID})}, "*");
+            iframeRef.current.contentWindow.postMessage({ type: "SEND_DATA", payload: JSON.stringify({additionalData: {...currentQuestion.additionalData}, settings: currentQuestion.settings, questionID: currentQuestion.studentQuestionAttemptUUID})}, "*");
         }
     };
 
-    useEffect(() => {
-        // Set up a listener for messages
-        window.addEventListener("message", handleMessage);
+    const sendMessageToIframe = (additionalData: any, settings: any, questionID: string) =>{
+        // Ensure the iframe reference is valid
+        if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.postMessage({ type: "SEND_DATA", payload: JSON.stringify({additionalData: additionalData, settings: settings, questionID: questionID})}, "*");
+        }
+    }
 
-        // Clean up the listener on unmount
-        return () => {
-            window.removeEventListener("message", handleMessage);
-        };
-    }, []);
+    /**
+     * Gets isSubmitted option from additionalData object, if error as in it's not object or does not have isSubmitted, isSubmitted is set to false.
+     * @param additionalData
+     */
+    const getIsSubmittedFromAdditionalData = (additionalData:any) =>{
+        return additionalData?.isSubmitted === true;
+    }
+
+    useEffect(()=>{
+        //Set is submitted on current Question update
+        setIsSubmitted(getIsSubmittedFromAdditionalData(currentQuestion.additionalData));
+    }, [currentQuestion]);
 
     useEffect(() => {
         // Whenever currentQuestion changes, send the updated question to the iframe
         if (iframeLoaded) {
-            sendMessageToIframe();
+            sendCurrentQuestionToIframe();
         }
     }, [currentQuestion, iframeLoaded]); // Runs whenever currentQuestion changes
 
@@ -128,9 +182,9 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
         sendMessage(createToggleFlagEvent(question.studentQuestionAttemptUUID, studentQuizAttempt.studentQuizAttemptUUID, {}));
     }
     
-    function leaveQuiz() {
-        const quizData = getDataFromQuestions();
-        const event:EventDetails = createQuizEvent(
+    async function leaveQuiz() {
+        const quizData = await getDataFromQuestions();
+        const event: EventDetails = createQuizEvent(
             QuizClientSideEvents.CLOSE_QUIZ,
             studentQuizAttempt.studentQuizAttemptUUID,
             currentQuestion.studentQuestionAttemptUUID,
@@ -141,9 +195,9 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
         navigator(leaveQuizURL);
     }
 
-    function moveQuestion(newQuestion:StudentQuestionAttempt) {
-        const quizData = getDataFromQuestions();
-        const event:EventDetails = createMoveQuestionEvent(
+    async function moveQuestion(newQuestion: StudentQuestionAttempt) {
+        const quizData = await getDataFromQuestions();
+        const event: EventDetails = createMoveQuestionEvent(
             studentQuizAttempt.studentQuizAttemptUUID,
             currentQuestion.studentQuestionAttemptUUID,
             newQuestion.studentQuestionAttemptUUID,
@@ -153,9 +207,9 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
         setCurrentQuestion(newQuestion);
     }
 
-    function saveQuestion(question:StudentQuestionAttempt) {
-        const questionData = getDataFromQuestion(question.studentQuestionAttemptUUID);
-        const event:EventDetails = createQuestionEvent(
+    async function saveQuestion(question: StudentQuestionAttempt) {
+        const questionData = await getDataFromQuestion(question.studentQuestionAttemptUUID);
+        const event: EventDetails = createQuestionEvent(
             QuestionClientSideEvent.SAVE_QUESTION,
             studentQuizAttempt.studentQuizAttemptUUID,
             question.studentQuestionAttemptUUID,
@@ -163,9 +217,9 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
         sendMessage(event);
     }
 
-    function submitQuestion(question:StudentQuestionAttempt) {
-        const questionData = getDataFromQuestion(question.studentQuestionAttemptUUID);
-        const event:EventDetails = createQuestionEvent(
+    async function submitQuestion(question: StudentQuestionAttempt) {
+        const questionData = await getDataFromQuestion(question.studentQuestionAttemptUUID);
+        const event: EventDetails = createQuestionEvent(
             QuestionClientSideEvent.SUBMIT_QUESTION,
             studentQuizAttempt.studentQuizAttemptUUID,
             question.studentQuestionAttemptUUID,
@@ -178,19 +232,41 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
     }
 
     /**
+     * Requests data from the current question Iframe and updates the additional data storage
+     */
+    const requestCurrentQuestionData = async () => {
+        const data = await requestDataFromIframe();
+        updateAdditionalData(data.questionID, data.additionalData);
+        return data.additionalData;
+    }
+
+    const getDataFromCurrentQuestion = async (): Promise<Record<string, any>> => {
+        //because of way react state gets updated we cannot use this: questionToAdditionalData[currentQuestion.studentQuestionAttemptUUID] ?? {}
+        // as it will be updated after function call so we have to return value
+        return await requestCurrentQuestionData();
+    }
+
+    /**
      * Gets data from a specific question
      * @param questionUUID the student question attempt id of which to get
      */
-    const getDataFromQuestion = (questionUUID:string):Record<string, any> =>{
-        return {};
+    const getDataFromQuestion = async (questionUUID: string): Promise<Record<string, any>> => {
+        //If requested id is the current question get data from there else the storage
+        if (questionUUID == currentQuestion.studentQuestionAttemptUUID) {
+            return await getDataFromCurrentQuestion();
+        }
+
+        return questionToAdditionalData[questionUUID] ?? {};
     }
 
     /**
      * Calls all the questions and gets the current additional data held on them.
      * The returned record is the question attempt id to the additional data of that question.
      */
-    const getDataFromQuestions = ():Record<string, Record<string, any>> =>{
-        return {};
+    const getDataFromQuestions = async (): Promise<Record<string, Record<string, any>>> => {
+        //Update with current data
+        const currentAdditionalData = await requestCurrentQuestionData();
+        return {...questionToAdditionalData, [currentQuestion.studentQuestionAttemptUUID]: currentAdditionalData};
     }
 
     const moveQuestionDirection = (direction: "previous" | "next") => {
@@ -228,22 +304,27 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user}:{studentQui
 
                     </div>
                     <div className="grow">
-                        <button onClick={requestDataFromIframe}>Request Data from Iframe</button>
-                        <button onClick={sendMessageToIframe}>Send Data to Iframe</button>
-                        {/*<iframe title={currentQuestion.moduleName} className="grow w-full h-full border-none" src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}/>*/}
-                        {/*<iframe ref={iframeRef} title={currentQuestion.moduleName}*/}
-                        {/*        className="grow w-full h-full border-none" src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}*/}
-                        {/*        onLoad={() => setIframeLoaded(true)} // Set iframeLoaded to true when iframe loads*/}
-                        {/*/>*/}
+                        <button onClick={requestDataFromIframe}>Request Data from Iframe
+                        </button>
+                        {/*<button onClick={async () => {*/}
+                        {/*    console.log(await requestDataFromIframe2());*/}
+                        {/*}}>Request Data from Iframe2*/}
+                        {/*</button>*/}
+                        <button onClick={sendCurrentQuestionToIframe}>Send Data to Iframe</button>
                         <iframe ref={iframeRef} title={currentQuestion.moduleName}
-                                className="grow w-full h-full border-none"
-                                src={`http://localhost:5174/`}
+                                className="grow w-full h-full border-none overflow-scroll"
+                                src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}
                                 onLoad={() => setIframeLoaded(true)} // Set iframeLoaded to true when iframe loads
                         />
+                        {/*<iframe ref={iframeRef} title={currentQuestion.moduleName}*/}
+                        {/*        className="grow w-full h-full border-none overflow-scroll"*/}
+                        {/*        src={` http://localhost:4173/`}*/}
+                        {/*        onLoad={() => setIframeLoaded(true)} // Set iframeLoaded to true when iframe loads*/}
+                        {/*/>*/}
                     </div>
                     <div className="flex self-end gap-4 px-4 pb-4 mt-2">
-                        <Button onClick={() => saveQuestion(currentQuestion)}>Save</Button>
-                        <Button onClick={() => submitQuestion(currentQuestion)}>Submit</Button>
+                        <Button onClick={() => saveQuestion(currentQuestion)} disabled={isSubmitted}>Save</Button>
+                        <Button onClick={() => submitQuestion(currentQuestion)} disabled={isSubmitted}>Submit</Button>
                     </div>
                     <div className="flex justify-between self-end w-full pb-4 px-4">
                         <Button disabled={currentQuestion.studentQuestionAttemptUUID === studentQuizAttempt.questions[0].studentQuestionAttemptUUID} onClick={() =>{moveQuestionDirection("previous")}}><ChevronLeft/>Previous</Button>
