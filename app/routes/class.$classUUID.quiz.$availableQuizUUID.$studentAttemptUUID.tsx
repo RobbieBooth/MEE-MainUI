@@ -1,6 +1,6 @@
 import {LoaderFunction} from "@remix-run/node";
 import {authenticate, OAuthUser} from "~/auth.server";
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {StudentQuestionAttempt, StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
 import {useLoaderData} from "@remix-run/react";
 import {QuizDisplay} from "~/routes/quiz.$quizUUID";
@@ -18,6 +18,8 @@ export const loader: LoaderFunction = async ({ request, params }):Promise<{ user
 export default function Page(){
     const [isLoadingQuiz, setIsLoadingQuiz] = useState<boolean>(true);
     const [quiz, setQuiz] = useState<StudentQuizAttempt>();
+    const [currentQuestion, setCurrentQuestion] = useState<StudentQuestionAttempt>();
+    const [currentQuestionUUID, setCurrentQuestionUUID] = useState<string | undefined>(undefined);
     const [error, setError] = useState<null | string>(null);//Error message
     const { user, classUUID, availableQuizUUID, studentAttemptUUID} = useLoaderData<typeof loader>() as {user: OAuthUser, classUUID: string, availableQuizUUID:string, studentAttemptUUID:string};
 
@@ -40,6 +42,12 @@ export default function Page(){
                 const jsonResponse = await response.json()
                 const studentQuizAttempt: StudentQuizAttempt = jsonResponse;
                 setQuiz(studentQuizAttempt);
+                if(studentQuizAttempt.questions.length > 0){
+                    setCurrentQuestionUUID(studentQuizAttempt.questions[0].studentQuestionAttemptUUID);
+                }else{
+                    setCurrentQuestionUUID(undefined);
+                }
+
             }catch (e: any) {
                 setError(e.message || "An unexpected error occurred");
             }
@@ -49,23 +57,20 @@ export default function Page(){
         getQuiz();
     }, [availableQuizUUID, studentAttemptUUID]);
 
-    const updateQuestionCallback = (newStudentQuestionAttempt:StudentQuestionAttempt)=>{
-        const newQuiz = quiz;
-        if(quiz === undefined) {
-            throw Error("Quiz is undefined and question update called");
+    const updateQuestionCallback = useCallback((newStudentQuestionAttempt: StudentQuestionAttempt) => {
+        setQuiz((prevQuiz) => {
+            if (!prevQuiz) return undefined;
 
-        }
-
-        //Update the question that we have update call from
-        newQuiz!.questions = newQuiz!.questions.map((question) => {
-            if (question.studentQuestionAttemptUUID === newStudentQuestionAttempt.studentQuestionAttemptUUID) {
-                return newStudentQuestionAttempt;
-            }
-            return question;
+            return {
+                ...prevQuiz,
+                questions: prevQuiz.questions.map((question) =>
+                    question.studentQuestionAttemptUUID === newStudentQuestionAttempt.studentQuestionAttemptUUID
+                        ? { ...newStudentQuestionAttempt }
+                        : question
+                ),
+            };
         });
-
-        setQuiz(newQuiz);
-    }
+    }, []);
 
     if(isLoadingQuiz && error == null){
         return <div><p>Loading Quiz...</p></div>;
@@ -74,8 +79,16 @@ export default function Page(){
         return <div><p>An Error Occurred: {error}</p></div>
     }
 
-    return(
-        <QuizDisplay studentQuizAttempt={quiz} user={user} leaveQuizURL={`/class/${classUUID}/quiz/`} updateQuizQuestion={updateQuestionCallback}/>
+    //Changed since i was having issues with just storing current question as the state was updating so i swapped to an indexed approach
+    const question = quiz.questions.find(value => value.studentQuestionAttemptUUID === currentQuestionUUID);
+    if(!question){
+        return <div><p>Cannot find any questions on quiz</p></div>
+    }
+
+    return (
+        <QuizDisplay studentQuizAttempt={quiz} user={user} leaveQuizURL={`/class/${classUUID}/quiz/`}
+                     updateQuizQuestion={updateQuestionCallback} currentQuestion={question}
+                     setCurrentQuestion={(question2 => setCurrentQuestionUUID((question2.studentQuestionAttemptUUID)))}/>
     );
 
 }

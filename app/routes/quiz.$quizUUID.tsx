@@ -77,27 +77,27 @@ export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUse
 
 
 
-export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQuestion}:{studentQuizAttempt:StudentQuizAttempt, leaveQuizURL:string, user:OAuthUser, updateQuizQuestion:(attempt: StudentQuestionAttempt)=>void}) {
+export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQuestion, currentQuestion, setCurrentQuestion}:{studentQuizAttempt:StudentQuizAttempt, leaveQuizURL:string, user:OAuthUser, updateQuizQuestion:(attempt: StudentQuestionAttempt)=>void, currentQuestion: StudentQuestionAttempt, setCurrentQuestion: (question: StudentQuestionAttempt) => void}) {
     const updateQuestionCallback = (message: StudentQuestionAttempt)=>{
-        updateAdditionalData(message.studentQuestionAttemptUUID, message.additionalData);
+        // updateAdditionalData(message.studentQuestionAttemptUUID, message.additionalData);
         updateQuizQuestion(message);
-        setIsSubmitted(getIsSubmittedFromAdditionalData(message.additionalData));
-        sendMessageToIframe(message.additionalData, message.settings, message.studentQuestionAttemptUUID);
+        // setIsSubmitted(getIsSubmittedFromAdditionalData(message.additionalData));
+        // sendMessageToIframe(message.additionalData, message.settings, message.studentQuestionAttemptUUID);
     }
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [iframeLoaded, setIframeLoaded] = useState(false); // Track iframe load state
-    const [currentQuestion, setCurrentQuestion] = useState(studentQuizAttempt.questions[0]);
+    // const [currentQuestion, setCurrentQuestion] = useState(studentQuizAttempt.questions[0]);
     const { messages, sendStart, sendMessage, isConnected} = useStompWithSend(user.backendJWT!, studentQuizAttempt.studentQuizAttemptUUID, updateQuestionCallback);
-    const [questionToAdditionalData, setQuestionToAdditionalData] = useState<Record<string, Record<string, any>>>({});//The questions Id to its additional data
+    // const [questionToAdditionalData, setQuestionToAdditionalData] = useState<Record<string, Record<string, any>>>({});//The questions Id to its additional data
     const [isSubmitted, setIsSubmitted] = useState(false);
     const navigator = useNavigate();
 
-    const updateAdditionalData = (currentQuestionID:string, additionalData:Record<string, any>)=> {
-        setQuestionToAdditionalData((previous) => {
-            return {...previous, [currentQuestionID]: additionalData};
-        });
-    }
+    // const updateAdditionalData = (currentQuestionID:string, additionalData:Record<string, any>)=> {
+    //     setQuestionToAdditionalData((previous) => {
+    //         return {...previous, [currentQuestionID]: additionalData};
+    //     });
+    // }
 
 
 
@@ -144,6 +144,8 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
     // };
 
     const sendCurrentQuestionToIframe = () => {
+        console.log(currentQuestion.additionalData);
+        console.log(studentQuizAttempt.questions);
         // Ensure the iframe reference is valid
         if (iframeRef.current?.contentWindow) {
             iframeRef.current.contentWindow.postMessage({ type: "SEND_DATA", payload: JSON.stringify({additionalData: {...currentQuestion.additionalData}, settings: currentQuestion.settings, questionID: currentQuestion.studentQuestionAttemptUUID})}, "*");
@@ -151,7 +153,12 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
     };
 
     const sendMessageToIframe = (additionalData: any, settings: any, questionID: string) =>{
+        if(questionID !== currentQuestion.studentQuestionAttemptUUID){
+            return;
+        }
         // Ensure the iframe reference is valid
+        console.log(additionalData);
+        console.log(studentQuizAttempt.questions);
         if (iframeRef.current?.contentWindow) {
             iframeRef.current.contentWindow.postMessage({ type: "SEND_DATA", payload: JSON.stringify({additionalData: additionalData, settings: settings, questionID: questionID})}, "*");
         }
@@ -168,6 +175,7 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
     useEffect(()=>{
         //Set is submitted on current Question update
         setIsSubmitted(getIsSubmittedFromAdditionalData(currentQuestion.additionalData));
+        console.log("current submission", currentQuestion.additionalData);
     }, [currentQuestion]);
 
     useEffect(() => {
@@ -236,7 +244,7 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
      */
     const requestCurrentQuestionData = async () => {
         const data = await requestDataFromIframe();
-        updateAdditionalData(data.questionID, data.additionalData);
+        // updateAdditionalData(data.questionID, data.additionalData);
         return data.additionalData;
     }
 
@@ -256,7 +264,7 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
             return await getDataFromCurrentQuestion();
         }
 
-        return questionToAdditionalData[questionUUID] ?? {};
+        return studentQuizAttempt.questions.find(q => q.studentQuestionAttemptUUID === questionUUID)?.additionalData ?? {};
     }
 
     /**
@@ -266,7 +274,15 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
     const getDataFromQuestions = async (): Promise<Record<string, Record<string, any>>> => {
         //Update with current data
         const currentAdditionalData = await requestCurrentQuestionData();
-        return {...questionToAdditionalData, [currentQuestion.studentQuestionAttemptUUID]: currentAdditionalData};
+
+        // Map all questions to their additional data
+        const allAdditionalData = Object.fromEntries(
+            studentQuizAttempt.questions.map(q => [q.studentQuestionAttemptUUID, q.additionalData])
+        );
+
+        return { ...allAdditionalData, [currentQuestion.studentQuestionAttemptUUID]: currentAdditionalData };
+
+        // return {...questionToAdditionalData, [currentQuestion.studentQuestionAttemptUUID]: currentAdditionalData};
     }
 
     const moveQuestionDirection = (direction: "previous" | "next") => {

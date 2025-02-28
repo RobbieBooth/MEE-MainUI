@@ -1,7 +1,7 @@
 import {LoaderFunction} from "@remix-run/node";
 import {authenticate, OAuthUser} from "~/auth.server";
 import {Class, getClassFromBackend, getUserMap, UserMap} from "~/routes/class.$classUUID._index";
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useLoaderData} from "@remix-run/react";
 import {MySidebar} from "~/routes/dashboard";
 import {Button} from "~/components/ui/button";
@@ -24,6 +24,7 @@ export const loader: LoaderFunction = async ({ request, params }):Promise<{ user
 export default function Page(){
     const [isCreatingQuiz, setIsCreatingQuiz] = useState<boolean>(true);
     const [quiz, setQuiz] = useState<StudentQuizAttempt>();
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [error, setError] = useState<null | string>(null);//Error message
     const { user, classUUID, availableQuizUUID } = useLoaderData<typeof loader>() as {user: OAuthUser, classUUID: string, availableQuizUUID:string};
 
@@ -46,6 +47,8 @@ export default function Page(){
                 const jsonResponse = await response.json()
                 const studentQuizAttempt: StudentQuizAttempt = jsonResponse;
                 setQuiz(studentQuizAttempt);
+                setCurrentQuestionIndex(0);
+
                 //Set window to id so that we dont create a new quiz if they refresh the page
                 window.history.replaceState(null, "Settings Page", `/class/${classUUID}/quiz/${availableQuizUUID}/${studentQuizAttempt.studentQuizAttemptUUID}`);
             }catch (e: any) {
@@ -57,23 +60,20 @@ export default function Page(){
         createQuiz();
     }, [availableQuizUUID]);
 
-    const updateQuestionCallback = (newStudentQuestionAttempt:StudentQuestionAttempt)=>{
-        const newQuiz = quiz;
-        if(quiz === undefined) {
-            throw Error("Quiz is undefined and question update called");
+    const updateQuestionCallback = useCallback((newStudentQuestionAttempt: StudentQuestionAttempt) => {
+        setQuiz((prevQuiz) => {
+            if (!prevQuiz) return undefined;
 
-        }
-
-        //Update the question that we have update call from
-        newQuiz!.questions = newQuiz!.questions.map((question) => {
-            if (question.studentQuestionAttemptUUID === newStudentQuestionAttempt.studentQuestionAttemptUUID) {
-                return newStudentQuestionAttempt;
-            }
-            return question;
+            return {
+                ...prevQuiz,
+                questions: prevQuiz.questions.map((question) =>
+                    question.studentQuestionAttemptUUID === newStudentQuestionAttempt.studentQuestionAttemptUUID
+                        ? { ...newStudentQuestionAttempt }
+                        : question
+                ),
+            };
         });
-
-        setQuiz(newQuiz);
-    }
+    }, []);
 
     if(isCreatingQuiz && error == null){
         return <div><p>Creating Quiz...</p></div>;
@@ -82,8 +82,16 @@ export default function Page(){
         return <div><p>An Error Occurred: {error}</p></div>
     }
 
+    //Changed since i was having issues with just storing current question as the state was updating so i swapped to an indexed approach
+    const currentQuestion = quiz.questions[currentQuestionIndex] ?? undefined;
+    if(currentQuestion === undefined) {
+        return <div><p>Cannot find any questions on quiz</p></div>
+    }
+
     return(
-        <QuizDisplay leaveQuizURL={`/class/${classUUID}/quiz/`} studentQuizAttempt={quiz} user={user} updateQuizQuestion={updateQuestionCallback}/>
+        <QuizDisplay leaveQuizURL={`/class/${classUUID}/quiz/`} studentQuizAttempt={quiz} user={user} updateQuizQuestion={updateQuestionCallback}
+                     currentQuestion={currentQuestion}
+                     setCurrentQuestion={(question => setCurrentQuestionIndex(quiz?.questions.findIndex((value) => value.studentQuestionAttemptUUID === question.studentQuestionAttemptUUID)))}/>
     );
 
 }
