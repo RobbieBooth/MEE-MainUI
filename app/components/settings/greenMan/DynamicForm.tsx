@@ -40,7 +40,7 @@ interface QuizSettings {
     quizSetting: BaseSetting;
     defaultModuleSettings: Record<ModuleName, BaseSetting>;
     questions: Record<UUID, Tuple>; // Using tuple to represent Pair
-    newQuestions: Tuple[]; // Array of tuples
+    newQuestions: Record<UUID, Tuple>; //
 }
 
 function createQuizSettings(json:any):QuizSettings {
@@ -62,13 +62,22 @@ function createQuizSettings(json:any):QuizSettings {
                 }
             )
         ),
-        newQuestions: (json.newQuestions || []).map(
-            (item: any) => {
-                const tuple = item as Tuple; // Explicitly cast value
-                tuple.second = castToBaseSetting(tuple.second);
-                return tuple;
-            }
-        )
+        newQuestions: Object.fromEntries(
+            Object.entries(json.newQuestions || {}).map(
+                ([key, value]) => {
+                    const tuple = value as Tuple; // Explicitly cast value
+                    tuple.second = castToBaseSetting(tuple.second);
+                    return [key as UUID, tuple];//We don't pass the key here since the key will be used on the group holding the setting, since if the setting type changes we want setting to change completely.
+                }
+            )
+        ),
+        // newQuestions: (json.newQuestions || []).map(
+        //     (item: any) => {
+        //         const tuple = item as Tuple; // Explicitly cast value
+        //         tuple.second = castToBaseSetting(tuple.second);
+        //         return tuple;
+        //     }
+        // )
     }
 
 }
@@ -147,6 +156,7 @@ export const DynamicForm = ({ settings, classUUID, user }: { settings: string | 
             id: uuidv4(),
             label: null,
             tooltip: null,
+            displayID: true,
             type: SettingType.ConditionalSelect,
             condition: {
                 type: SettingType.Select,
@@ -255,13 +265,14 @@ export const DynamicForm = ({ settings, classUUID, user }: { settings: string | 
         });
 
 
-        const newQuestions:Tuple[] = [];
+        // const newQuestions:Tuple[] = [];
+        const newQuestions:Record<UUID, Tuple> = {}
         const previousQuestions:Record<UUID, Tuple> = {}
         Object.entries(questionList).forEach(([key, value]) => {
             if(quizSettingsHolder.questions[key]){
                 previousQuestions[key] = {first:value[0], second:value[1]};
             }else{
-                newQuestions.push({first:value[0], second:value[1]});
+                newQuestions[key] = {first:value[0], second:value[1]};
             }
         });
         const newQuizSettingHolder:QuizSettings = {

@@ -34,7 +34,7 @@ export function SettingConditionalSelect({
 
     return (
         <fieldset key={conditionalSelect.id} className="space-x-3 space-y-0 rounded-md border p-4">
-            <GroupTitle label={conditionalSelect.label} tooltip={conditionalSelect.tooltip}/>
+            <GroupTitle label={conditionalSelect.label} tooltip={conditionalSelect.tooltip}  id={(conditionalSelect.displayID != undefined && conditionalSelect.displayID) ? conditionalSelect.id : undefined}/>
             {/*{renderSetting(conditionalSetting.condition, control, register, setValue)}*/}
             <SelectSettingComponent selectSetting={conditionalSelect.condition} control={control} updateValue={(selected: string[]) => {
                 setSelectSettings((prevState) => ({

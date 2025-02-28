@@ -126,7 +126,8 @@ export interface DateSetting extends BaseSetting {
 export interface GroupSetting extends BaseSetting {
     type: SettingType.Group;
     children: BaseSetting[];
-    haveBorder?: boolean,
+    haveBorder?: boolean;
+    displayID?: boolean;//For when we want to identify questions for other questions to interact with
 }
 
 // Composite: SettingList
@@ -154,6 +155,7 @@ export interface ConditionalSelectSetting extends BaseSetting {
     type: SettingType.ConditionalSelect;
     condition: SelectSetting; // The SelectSetting acts as the condition
     groups: Record<string, BaseSetting>; // A map where each key corresponds to a value in the SelectSetting, and the value is a GroupSetting
+    displayID?: boolean;
 }
 
 /**
@@ -291,6 +293,7 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 id: settingUUID,
                 type: SettingType.Group,
                 haveBorder: json.haveBorder ?? true,
+                displayID: json.displayID ?? false,
                 children: json.children.map((child: any) => castToBaseSetting(child)),
             } as GroupSetting;
 
@@ -322,6 +325,7 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
             return {
                 ...json,
                 id: settingUUID,
+                displayID: json.displayID ?? false,
                 type: SettingType.ConditionalSelect,
                 condition: castToBaseSetting(json.condition) as SelectSetting,
                 groups: Object.fromEntries(
