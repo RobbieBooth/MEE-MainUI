@@ -17,7 +17,6 @@ export type Class = {
     availableQuizzes: AvailableQuiz[];
 };
 
-// Assuming QuizInfo and AvailableQuiz are already defined elsewhere
 export type QuizInfo = {
     quizID: string; // UUID as string
     quizName: string;

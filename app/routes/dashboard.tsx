@@ -20,6 +20,7 @@ import {IUser} from "~/db/model/user";
 import {BookOpen, Bot, Settings2, SquareTerminal, GraduationCap} from "lucide-react";
 
 import {ReactNode, useEffect, useState} from "react";
+import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "~/components/ui/resizable";
 
 export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUser}> => {
     const user = await authenticate(request, "/dashboard");
@@ -33,9 +34,33 @@ export default function Dashboard() {
 
     return (
         <MySidebar user={user}>
-            <div>
-                <p>Hello</p>
-            </div>
+            <ResizablePanelGroup
+                direction="vertical"
+                className="h-screen w-full rounded-lg border"
+            >
+                <ResizablePanel defaultSize={15}>
+                    <ResizablePanelGroup direction="horizontal">
+                        <ResizablePanel defaultSize={50}>
+                            <div className="flex h-full items-center justify-center p-6">
+                                <span className="font-semibold">One</span>
+                            </div>
+                        </ResizablePanel>
+                        <ResizableHandle />
+                        <ResizablePanel defaultSize={50}>
+                            <div className="flex h-full items-center justify-center p-6">
+                                <span className="font-semibold">Two</span>
+                            </div>
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
+                </ResizablePanel>
+                <ResizableHandle />
+                <ResizablePanel defaultSize={50}>
+                    <div className="flex h-full items-center justify-center p-6">
+                        <span className="font-semibold">Three</span>
+                    </div>
+                </ResizablePanel>
+            </ResizablePanelGroup>
+
         </MySidebar>
     )
 }
