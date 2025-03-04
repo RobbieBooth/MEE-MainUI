@@ -58,9 +58,10 @@ export function useStompWithSend(authToken: string, studentQuizAttemptID:string,
         setClient(stompClient);
 
         return () => {
+            console.log("Deactivating STOMP client...");
             stompClient.deactivate(); // Cleanup on component unmount
         };
-    }, []);
+    }, [authToken, studentQuizAttemptID]);
 
     // Send a message to the server
     const sendStart = (message: EventDetails) => {

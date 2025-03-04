@@ -92,6 +92,9 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
     // const [questionToAdditionalData, setQuestionToAdditionalData] = useState<Record<string, Record<string, any>>>({});//The questions Id to its additional data
     const [isSubmitted, setIsSubmitted] = useState(false);
     const navigator = useNavigate();
+    // State to manage STOMP connection
+    const [quizAttemptID, setQuizAttemptID] = useState(studentQuizAttempt.studentQuizAttemptUUID);
+
 
     // const updateAdditionalData = (currentQuestionID:string, additionalData:Record<string, any>)=> {
     //     setQuestionToAdditionalData((previous) => {
@@ -99,7 +102,13 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
     //     });
     // }
 
-
+    //For when the quiz id changes reinitialise the STOMP client
+    useEffect(() => {
+        if (studentQuizAttempt.studentQuizAttemptUUID !== quizAttemptID) {
+            console.log("Quiz attempt ID changed:", studentQuizAttempt.studentQuizAttemptUUID);
+            setQuizAttemptID(studentQuizAttempt.studentQuizAttemptUUID);
+        }
+    }, [studentQuizAttempt.studentQuizAttemptUUID]);
 
     /**
      * Requests the `QuestionIFrameReturnType` from the current Iframe and if response is not returned from Iframe in 4 seconds then it fails.
@@ -300,6 +309,14 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
     };
 
 
+    const iframeSrc = `http://localhost:8080/invoke/${currentQuestion.moduleName}`;
+
+    useEffect(() => {
+        // Whenever src changes, reset iframeLoaded to false
+        setIframeLoaded(false);
+    }, [iframeSrc]);
+
+
     useEffect(() => {
         if (isConnected) {
             // handleSubmit();
@@ -329,12 +346,13 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
                         <button onClick={sendCurrentQuestionToIframe}>Send Data to Iframe</button>
                         <iframe ref={iframeRef} title={currentQuestion.moduleName}
                                 className="grow w-full h-full border-none overflow-scroll"
-                                src={`http://localhost:8080/invoke/${currentQuestion.moduleName}`}
+                                src={iframeSrc}
+                                // onLoadStart={() => setIframeLoaded(false)}
                                 onLoad={() => setIframeLoaded(true)} // Set iframeLoaded to true when iframe loads
                         />
                         {/*<iframe ref={iframeRef} title={currentQuestion.moduleName}*/}
                         {/*        className="grow w-full h-full border-none overflow-scroll"*/}
-                        {/*        src={` http://localhost:4173/`}*/}
+                        {/*        src={`http://localhost:5174/`}*/}
                         {/*        onLoad={() => setIframeLoaded(true)} // Set iframeLoaded to true when iframe loads*/}
                         {/*/>*/}
                     </div>
