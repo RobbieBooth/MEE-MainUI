@@ -121,6 +121,9 @@ export function VersionQuizDialog({classID, quizzesVersions, isEducator, disable
 }
 
 export function QuizVersionTable({classID, quizzesVersions, isEducator}:{ classID:string, quizzesVersions:QuizInfo[], isEducator: boolean}) {
+    //Sort the quizzes in descending order so that the newest appears at the top of the table
+    const sortedQuizzes = [...quizzesVersions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     return (
         <Table>
             {/*<TableCaption>Available Quizzes</TableCaption>*/}
@@ -135,7 +138,7 @@ export function QuizVersionTable({classID, quizzesVersions, isEducator}:{ classI
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {quizzesVersions.map((quiz) => {
+                {sortedQuizzes.map((quiz) => {
                     if(quiz.versionID == undefined){
                         return;
                     }
