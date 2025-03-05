@@ -3,11 +3,11 @@ import {authenticate, OAuthUser} from "~/auth.server";
 import {useLoaderData} from "@remix-run/react";
 import {DynamicForm} from "~/components/settings/greenMan/DynamicForm";
 import React, {useEffect, useState} from "react";
-import {Class, getClassFromBackend, getUserMap, UserMap} from "~/routes/class.$classUUID._index";
+import {Class, getClassFromBackend, getUserMap, userDetails, UserMap} from "~/routes/class.$classUUID._index";
 import {MySidebar} from "~/routes/dashboard";
 import {Button} from "~/components/ui/button";
 import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQuizForm";
-import {AvailableQuizTable} from "~/components/quizSection/quizDisplayPage";
+import {AvailableQuizTable, QuizTable} from "~/components/quizSection/quizDisplayPage";
 
 export const loader: LoaderFunction = async ({ request, params }):Promise<{ user: OAuthUser; classUUID: string, classData:Class }> => {
     const { classUUID } = params;
@@ -51,7 +51,11 @@ export default function SettingPage(){
             }
 
             {classDataHolder == undefined ? "Loading... Class Data" :
-                <AvailableQuizTable availableQuizzes={classDataHolder.availableQuizzes} user={user} classID={classUUID} isEducator={false}/>
+                <AvailableQuizTable availableQuizzes={classDataHolder.availableQuizzes} user={user} classID={classUUID} isEducator={true} userMap={userDetailMap ?? new Map<string, userDetails>()}/>
+            }
+
+            {classDataHolder == undefined ? "Loading... Class Data" :
+                <QuizTable quizzes={classDataHolder.quizzes} user={user} classID={classUUID} isEducator={true}/>
             }
         </MySidebar>
     );

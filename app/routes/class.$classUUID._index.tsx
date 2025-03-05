@@ -48,7 +48,7 @@ export interface SampleStudentAttempt {
 
 
 
-interface userDetails {
+export interface userDetails {
     email: string;
     name?: string;
 }
