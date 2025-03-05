@@ -3,7 +3,14 @@ import {authenticate, OAuthUser} from "~/auth.server";
 import {useLoaderData} from "@remix-run/react";
 import {DynamicForm} from "~/components/settings/greenMan/DynamicForm";
 import React, {useEffect, useState} from "react";
-import {Class, getClassFromBackend, getUserMap, userDetails, UserMap} from "~/routes/class.$classUUID._index";
+import {
+    AvailableQuiz,
+    Class,
+    getClassFromBackend,
+    getUserMap,
+    userDetails,
+    UserMap
+} from "~/routes/class.$classUUID._index";
 import {MySidebar} from "~/routes/dashboard";
 import {Button} from "~/components/ui/button";
 import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQuizForm";
@@ -47,11 +54,16 @@ export default function SettingPage(){
                 </a>
             </Button>
             {isLoadingUserDetailMap || classDataHolder == undefined ? "Loading..." :
-                <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder}/>
+                <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder} createOrEdit={"Create"}/>
             }
 
             {classDataHolder == undefined ? "Loading... Class Data" :
-                <AvailableQuizTable availableQuizzes={classDataHolder.availableQuizzes} user={user} classID={classUUID} isEducator={true} userMap={userDetailMap ?? new Map<string, userDetails>()}/>
+                <AvailableQuizTable availableQuizzes={classDataHolder.availableQuizzes} user={user} classID={classUUID} isEducator={true} userMap={userDetailMap ?? new Map<string, userDetails>()}
+                editQuizButton={
+                    (quiz:AvailableQuiz)=>
+                    <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder} createOrEdit={"Edit"} availableQuizBeingEdited={quiz} />
+                }
+                />
             }
 
             {classDataHolder == undefined ? "Loading... Class Data" :

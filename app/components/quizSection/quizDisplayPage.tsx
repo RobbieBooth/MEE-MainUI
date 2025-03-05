@@ -13,7 +13,7 @@ import {useNavigate} from "react-router";
 import {AvailableQuiz, QuizInfo, UserMap} from "~/routes/class.$classUUID._index";
 import {Ellipsis, Infinity} from "lucide-react";
 import {OAuthUser} from "~/auth.server";
-import React, {useEffect, useState} from "react";
+import React, {ReactNode, useEffect, useState} from "react";
 import {
     Dialog,
     DialogContent,
@@ -159,7 +159,7 @@ export function QuizVersionTable({classID, quizzesVersions, isEducator}:{ classI
     )
 }
 
-export function AvailableQuizTable({userMap, classID, user, availableQuizzes, isEducator}:{ userMap: UserMap, classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean}) {
+export function AvailableQuizTable({userMap, classID, user, availableQuizzes, isEducator, editQuizButton}:{ userMap: UserMap, classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean, editQuizButton: (quiz:AvailableQuiz)=> ReactNode}) {
     const navigate = useNavigate();
 
     const handleGoToQuiz = (uuid:string) => {
@@ -206,8 +206,7 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
                                     Start Quiz
                                 </Button></TableCell>}
                             {isEducator &&
-                                <TableCell className="text-right"><Button onClick={() => handleGoToQuiz(quiz.id)}>Edit
-                                    Quiz</Button></TableCell>}
+                                <TableCell className="text-right">{editQuizButton(quiz)}</TableCell>}
                             <TableCell className="text-right"><AttemptsDialog  availableQuizID={quiz.id} studentAttempts={quiz.studentAttempts} isEducator={isEducator} disabled={false} classID={classID} userMap={userMap} quizID={quiz.quizInfo.quizID}/></TableCell>
                             {/*<TableCell><Button onClick={()=>handleGoToQuiz(uuid)}>{buttonTitle}</Button></TableCell>*/}
                         </TableRow>

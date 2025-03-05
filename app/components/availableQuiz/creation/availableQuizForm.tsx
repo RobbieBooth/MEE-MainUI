@@ -250,6 +250,8 @@ const defaultAvailableQuizForm:BaseSetting[] = [
     instantResultToggle
 ];
 
+type CreateOrEdit = "Create" | "Edit";
+
 
 export function AvailableQuizForm(
     {
@@ -257,13 +259,15 @@ export function AvailableQuizForm(
         userMap,
         user,
         availableQuizBeingEdited,
-        updateClass
+        updateClass,
+        createOrEdit
     }:{
         currentClass:Class,
         userMap:UserMap,
         user:OAuthUser,
         availableQuizBeingEdited?:AvailableQuiz,
         updateClass: (classBeingUpdated: Class) => void,
+        createOrEdit: CreateOrEdit
     }
 ) {
     const [baseSettings, setBaseSettings] = useState<BaseSetting[]>(defaultAvailableQuizForm);
@@ -380,8 +384,12 @@ export function AvailableQuizForm(
         studentConditional.condition.value = availableToAllStudents;
         const studentFormSelect = studentFormStudentsSelect;
         studentFormSelect.availableValues = currentClass.students.map((studentID) => {
-            const student = userMap.get(studentID);
-            if(userMap == undefined){
+            let student = undefined;
+            if(userMap != undefined){
+                student = userMap.get(studentID);
+            }
+
+            if(student == undefined){
                 return `UNKNOWN ~ ${studentID}`;
             }
             return `${student!.email} ~ ${studentID}`;
@@ -571,13 +579,13 @@ export function AvailableQuizForm(
     return (
         <Dialog open={open} onOpenChange={openChange}>
             <DialogTrigger asChild>
-                <Button variant="outline">Create Available Quiz</Button>
+                <Button variant="outline">{createOrEdit} Available Quiz</Button>
             </DialogTrigger>
             <DialogContent className="min-w-fit">
                 <DialogHeader>
-                    <DialogTitle>Create Class</DialogTitle>
+                    <DialogTitle>{createOrEdit} Class</DialogTitle>
                     <DialogDescription>
-                        Create a new quiz which is available to students to complete
+                        {createOrEdit} a quiz which is available to students to complete
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh] w-full">
