@@ -17,7 +17,7 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from "~/components/ui/sidebar"
-import {sidebarItem} from "~/components/dashboard/appSidebar2";
+import {sidebarItem} from "~/components/dashboard/appSidebar";
 import {v4 as uuidv4} from "uuid";
 import React, {useEffect, useState} from "react";
 

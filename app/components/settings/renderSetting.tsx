@@ -20,7 +20,7 @@ import {SettingGroup} from "~/components/settings/components/settingGroup";
 import {SettingList} from "~/components/settings/components/settingList";
 import {SettingConditionalBool} from "~/components/settings/components/settingConditionalBool";
 import {SettingConditionalSelect} from "~/components/settings/components/settingConditionalSelect";
-import {createSettingTitle} from "~/components/settings/greenMan/DynamicForm";
+import {createSettingTitle} from "~/components/settings/DynamicForm";
 import {SettingTagInput} from "~/components/settings/components/settingTagInput";
 import {Textarea} from "~/components/ui/textarea";
 import {SettingDate} from "~/components/settings/components/settingDate";

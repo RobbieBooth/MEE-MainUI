@@ -13,7 +13,7 @@ import {
 import {v4 as uuidv4} from "uuid";
 import React, {useEffect, useState} from "react";
 import {FormProvider, useForm} from "react-hook-form";
-import {updateSettingRecursively} from "~/components/settings/greenMan/DynamicForm";
+import {updateSettingRecursively} from "~/components/settings/DynamicForm";
 import {toast} from "sonner";
 import {
     Dialog,
@@ -25,7 +25,7 @@ import {
     DialogTrigger
 } from "~/components/ui/dialog";
 import {Button} from "~/components/ui/button";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 import {OAuthUser} from "~/auth.server";
 import {AvailableQuiz, Class, QuizInfo, UserMap} from "~/routes/class.$classUUID._index";
 import {ScrollArea} from "~/components/ui/scroll-area";

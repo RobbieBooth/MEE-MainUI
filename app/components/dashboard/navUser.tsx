@@ -38,11 +38,6 @@ export function NavUser({
     user: OAuthUser
 }) {
     const { isMobile } = useSidebar();
-    // const
-    //
-    // useEffect(() => {
-    //
-    // },[user])
 
     return (
         <SidebarMenu>

@@ -1,5 +1,5 @@
 import React from "react";
-import {DynamicForm} from "~/components/settings/greenMan/DynamicForm";
+import {DynamicForm} from "~/components/settings/DynamicForm";
 import {LoaderFunction} from "@remix-run/node";
 import {authenticate, OAuthUser} from "~/auth.server";
 import {useLoaderData} from "@remix-run/react";

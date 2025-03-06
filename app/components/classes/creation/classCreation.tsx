@@ -1,8 +1,8 @@
 import {FormProvider, useForm} from "react-hook-form";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 import {Button} from "~/components/ui/button";
 import React, {useEffect, useState} from "react";
-import {createSettingTitle, updateSettingRecursively} from "~/components/settings/greenMan/DynamicForm";
+import {createSettingTitle, updateSettingRecursively} from "~/components/settings/DynamicForm";
 import {BaseSetting, InputSetting, SettingType, TagInputSetting} from "~/components/settings/compositeSettings";
 import {v4 as uuidv4} from "uuid";
 import {

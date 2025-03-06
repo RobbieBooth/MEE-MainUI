@@ -7,7 +7,7 @@ import {
     ToggleDisplayType,
     ToggleSetting
 } from "~/components/settings/compositeSettings";
-import {DynamicForm} from "~/components/settings/greenMan/DynamicForm";
+import {DynamicForm} from "~/components/settings/DynamicForm";
 import {useLoaderData, useParams} from "@remix-run/react";
 import {LoaderFunction} from "@remix-run/node";
 import {authenticate, OAuthUser} from "~/auth.server";

@@ -1,7 +1,7 @@
 import {LoaderFunction} from "@remix-run/node";
 import {authenticate, OAuthUser} from "~/auth.server";
 import {useLoaderData} from "@remix-run/react";
-import {sidebarItem} from "~/components/dashboard/appSidebar2";
+import {sidebarItem} from "~/components/dashboard/appSidebar";
 import {BookOpen, Bot, Settings2, SquareTerminal} from "lucide-react";
 import {getClassesFromBackend, MySidebar} from "~/routes/dashboard";
 import {Button} from "~/components/ui/button";

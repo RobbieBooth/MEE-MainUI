@@ -1,6 +1,6 @@
 import {ConditionalBoolSetting, ToggleSetting} from "~/components/settings/compositeSettings";
 import React, {useEffect, useState} from "react";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 import {GroupTitle} from "~/components/settings/components/settingGroup";
 import {Toggle} from "~/components/settings/components/toggle";
 

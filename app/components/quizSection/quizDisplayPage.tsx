@@ -25,7 +25,7 @@ import {
 } from "~/components/ui/dialog";
 import {ScrollArea} from "~/components/ui/scroll-area";
 import {FormProvider} from "react-hook-form";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 import {AttemptsDialog} from "~/components/quizSection/studentAttemptsPage";
 
 export function QuizTable({classID, user, quizzes, isEducator}:{ classID:string, user:OAuthUser, quizzes:QuizInfo[], isEducator: boolean}) {

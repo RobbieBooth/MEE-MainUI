@@ -79,8 +79,6 @@ export function AppSidebar({leaveQuizFN, questions, currentQuestion, setCurrentQ
                                         </CarouselItem>
                                     ))}
                                 </CarouselContent>
-                                {/*<CarouselPrevious />*/}
-                                {/*<CarouselNext />*/}
                             </Carousel>
 
                         </SidebarMenu>

@@ -4,7 +4,7 @@ import {Checkbox} from "~/components/ui/checkbox";
 import {Switch} from "~/components/ui/switch";
 import {SettingTooltip} from "~/components/settings/components/settingTooltip";
 import React from "react";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 
 export function SettingGroup({
                            groupSetting,

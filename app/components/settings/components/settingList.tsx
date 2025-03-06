@@ -6,7 +6,7 @@ import {
 } from "~/components/settings/compositeSettings";
 
 import React, {useEffect, useState} from "react";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 import {Button} from "~/components/ui/button";
 import {Plus} from "lucide-react";
 import {SettingTooltip} from "~/components/settings/components/settingTooltip";
