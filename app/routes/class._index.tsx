@@ -16,6 +16,7 @@ import {
 import {Label} from "~/components/ui/label";
 import {Input} from "~/components/ui/input";
 import {ClassForm} from "~/components/classes/creation/classCreation";
+import {ClassTable} from "~/components/classes/classTable";
 
 export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUser}> => {
     const user = await authenticate(request, "/class");
@@ -30,7 +31,8 @@ export default function Dashboard() {
     return (
         <MySidebar user={user}>
             <div>
-                <ClassForm userEmail={user.email!} classFormFields={{className:"", classDescription: "", classEducatorEmails: [], classStudentEmails:[]}}/>
+                <ClassForm userEmail={user.email!} classFormFields={{className:"", classDescription: "", classEducatorEmails: [], classStudentEmails:[]}} createOrEdit={"Create"}/>
+                {/*<ClassTable classes={}/>*/}
             </div>
         </MySidebar>
     )

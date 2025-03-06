@@ -79,7 +79,7 @@ const resources = [
     newPage: false,
   },
   {
-    href: "https://remix.run/start/tutorial",
+    href: "https://devweb2024.cis.strath.ac.uk/xbb21163/",
     text: "Application Documentation",
     icon: (
       <svg

@@ -21,16 +21,39 @@ import {BookOpen, Bot, Settings2, SquareTerminal, GraduationCap} from "lucide-re
 
 import {ReactNode, useEffect, useState} from "react";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "~/components/ui/resizable";
+import {Class, getClassFromBackend} from "~/routes/class.$classUUID._index";
+import {ClassTable} from "~/components/classes/classTable";
 
-export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUser}> => {
+export async function getClassesFromBackend(user: OAuthUser) {
+    const response = await fetch("http://localhost:8080/v1/api/class/", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.backendJWT}`
+        },
+    });
+
+    if (!response.ok) {
+        throw new Response("Failed to fetch class data", {status: response.status});
+    }
+    const jsonResponse = await response.json()
+    const classesData: Class[] = jsonResponse;
+
+    return classesData;
+}
+
+export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUser, classes: Class[]}> => {
     const user = await authenticate(request, "/dashboard");
     // use the user data here
 
-    return { user };
+    //Fetch the class data from your backend API
+    const classes = await getClassesFromBackend(user);
+
+    return { user, classes };
 };
 
 export default function Dashboard() {
-    const { user } = useLoaderData<typeof loader>() as {user: OAuthUser};
+    const { user, classes } = useLoaderData<typeof loader>() as {user: OAuthUser, classes: Class[]};
 
     return (
         <MySidebar user={user}>
@@ -56,7 +79,7 @@ export default function Dashboard() {
                 <ResizableHandle />
                 <ResizablePanel defaultSize={50}>
                     <div className="flex h-full items-center justify-center p-6">
-                        <span className="font-semibold">Three</span>
+                        <ClassTable user={user} classes={classes}/>
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
@@ -182,17 +205,6 @@ export function MySidebar({ children, user }:SidebarProps) {
                         </BreadcrumbList>
                     </Breadcrumb>
                 </header>
-                {/*<div className="p-4">*/}
-                {/*    {loading && <p>Loading user data...</p>}*/}
-                {/*    {error && <p className="text-red-500">Error: {error}</p>}*/}
-                {/*    {userData && (*/}
-                {/*        <div>*/}
-                {/*            <h1 className="text-xl font-bold">User Info</h1>*/}
-                {/*            <p>ID: {userData.id}</p>*/}
-                {/*            <p>Class: {userData.classes.length}</p>*/}
-                {/*        </div>*/}
-                {/*    )}*/}
-                {/*</div>*/}
                 {children}
             </SidebarInset>
         </SidebarProvider>

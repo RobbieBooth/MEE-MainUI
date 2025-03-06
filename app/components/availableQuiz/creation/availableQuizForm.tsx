@@ -250,7 +250,7 @@ const defaultAvailableQuizForm:BaseSetting[] = [
     instantResultToggle
 ];
 
-type CreateOrEdit = "Create" | "Edit";
+export type CreateOrEdit = "Create" | "Edit";
 
 
 export function AvailableQuizForm(

@@ -55,7 +55,7 @@ export interface userDetails {
 
 export type UserMap = Map<string, userDetails>;
 export const getUserMap = async (classInfo: Class):Promise<UserMap> => {
-    const uuidList = classInfo.students;
+    const uuidList = [...classInfo.students];
     uuidList.push(...classInfo.educators);
 
     const payload = {
@@ -165,7 +165,7 @@ export default function Dashboard() {
                     <table>
                         <thead>
                         <tr>
-                            <th>Name</th>
+                            <th>Lecturer Name</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -179,7 +179,7 @@ export default function Dashboard() {
                                             <Skeleton className="w-24 h-4"/>
                                         ) : (
                                             // Once data is loaded, display educator's name
-                                             userDetailMap == null ? "ERROR" : getUsersName(userDetailMap, educatorUUID)
+                                            userDetailMap == null ? "ERROR" : getUsersName(userDetailMap, educatorUUID)
                                         )}
                                     </td>
                                 </tr>
@@ -188,13 +188,40 @@ export default function Dashboard() {
                         </tbody>
                     </table>
                 </div>
-                <p>Students: {classData.students?.join(", ")}</p>
+                <div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Student Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {classData.students.map((studentUUID) => {
+
+                            return (
+                                <tr key={studentUUID}>
+                                    <td>
+                                        {isLoadingUserDetailMap ? (
+                                            // Show skeleton loader while data is loading
+                                            <Skeleton className="w-24 h-4"/>
+                                        ) : (
+                                            // Once data is loaded, display educator's name
+                                            userDetailMap == null ? "ERROR" : getUsersName(userDetailMap, studentUUID)
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                        </tbody>
+                    </table>
+                </div>
+                {/*<p>Students: {classData.students?.join(", ")}</p>*/}
             </div>
         </MySidebar>
     );
 }
 
-function getUsersName(userDetailMap: UserMap, uuid:string) {
+function getUsersName(userDetailMap: UserMap, uuid: string) {
     const userDetail = userDetailMap.get(uuid);
     if (!userDetail) {
         return "UNKNOWN";

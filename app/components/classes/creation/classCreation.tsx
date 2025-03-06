@@ -15,6 +15,7 @@ import {
     DialogTrigger
 } from "~/components/ui/dialog";
 import { toast } from "sonner";
+import {CreateOrEdit} from "~/components/availableQuiz/creation/availableQuizForm";
 
 
 const className:InputSetting = {
@@ -75,13 +76,16 @@ interface classFormFields {
     classStudentEmails: string[]
 }
 
+
 export function ClassForm(
     {
         userEmail,
-        classFormFields
+        classFormFields,
+        createOrEdit
     }:{
         userEmail:string,
-        classFormFields: classFormFields
+        classFormFields: classFormFields,
+        createOrEdit: CreateOrEdit
     }
 ) {
     const [baseSettings, setBaseSettings] = useState<BaseSetting[]>(defaultClassForm);
@@ -171,13 +175,13 @@ export function ClassForm(
     return (
         <Dialog open={open} onOpenChange={openChange}>
             <DialogTrigger asChild>
-                <Button variant="outline">Create Class</Button>
+                <Button variant="outline">{createOrEdit} Class</Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Create Class</DialogTitle>
                     <DialogDescription>
-                        Create a new class
+                        {createOrEdit} a class
                     </DialogDescription>
                 </DialogHeader>
                 <FormProvider {...methods}>
