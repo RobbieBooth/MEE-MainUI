@@ -34,7 +34,7 @@ export function FlagManager({isFlagged, setFlagged}:{ isFlagged:boolean, setFlag
     </TooltipProvider>);
 }
 
-export function AppSidebar({leaveQuizFN, questions, currentQuestion, setCurrentQuestion, setFlagged}: {leaveQuizFN:()=>void, questions: Question[], currentQuestion: Question, setCurrentQuestion: (question: Question) => void, setFlagged: (question: Question, flag:boolean) => void} ){
+export function AppSidebar({leaveQuizFN, questions, currentQuestion, setCurrentQuestion, setFlagged, submitQuizFN}: {leaveQuizFN:()=>void, questions: Question[], currentQuestion: Question, setCurrentQuestion: (question: Question) => void, setFlagged: (question: Question, flag:boolean) => void, submitQuizFN:()=>void} ){
     return (
         <Sidebar className="h-screen">
             <SidebarHeader>
@@ -89,9 +89,9 @@ export function AppSidebar({leaveQuizFN, questions, currentQuestion, setCurrentQ
                 <SidebarMenu>
                     <SidebarMenuItem key={"ReviewQuiz"}>
                         <SidebarMenuButton asChild>
-                            <a href={"#"}>
+                            <a onClick={submitQuizFN}>
                                 <BookOpen />
-                                <span>Review Quiz</span>
+                                <span>Submit Quiz</span>
                             </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

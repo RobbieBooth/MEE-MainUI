@@ -207,9 +207,20 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
             currentQuestion.studentQuestionAttemptUUID,
             quizData);
         sendMessage(event);
-        //TODO check that it was successful.
         //Return
         navigator(leaveQuizURL);
+    }
+
+    async function submitQuiz() {
+        const quizData = await getDataFromQuestions();
+        const event: EventDetails = createQuizEvent(
+            QuizClientSideEvents.SUBMIT_QUIZ,
+            studentQuizAttempt.studentQuizAttemptUUID,
+            currentQuestion.studentQuestionAttemptUUID,
+            quizData);
+        sendMessage(event);
+        // //Return
+        // navigator(leaveQuizURL);
     }
 
     async function moveQuestion(newQuestion: StudentQuestionAttempt) {
@@ -326,7 +337,7 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
     return (
         <div>
             <SidebarProvider defaultOpen={true}>
-                <AppSidebar leaveQuizFN={leaveQuiz} questions={studentQuizAttempt.questions} currentQuestion={currentQuestion} setCurrentQuestion={moveQuestion} setFlagged={setFlagged}/>
+                <AppSidebar leaveQuizFN={leaveQuiz} questions={studentQuizAttempt.questions} currentQuestion={currentQuestion} setCurrentQuestion={moveQuestion} setFlagged={setFlagged} submitQuizFN={submitQuiz}/>
                 <main className="w-full flex flex-col h-screen">
                     <div>
                         <SidebarTrigger/>
@@ -337,13 +348,13 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
 
                     </div>
                     <div className="grow">
-                        <button onClick={requestDataFromIframe}>Request Data from Iframe
-                        </button>
+                        {/*<button onClick={requestDataFromIframe}>Request Data from Iframe*/}
+                        {/*</button>*/}
                         {/*<button onClick={async () => {*/}
                         {/*    console.log(await requestDataFromIframe2());*/}
                         {/*}}>Request Data from Iframe2*/}
                         {/*</button>*/}
-                        <button onClick={sendCurrentQuestionToIframe}>Send Data to Iframe</button>
+                        {/*<button onClick={sendCurrentQuestionToIframe}>Send Data to Iframe</button>*/}
                         <iframe ref={iframeRef} title={currentQuestion.moduleName}
                                 className="grow w-full h-full border-none overflow-scroll"
                                 src={iframeSrc}
