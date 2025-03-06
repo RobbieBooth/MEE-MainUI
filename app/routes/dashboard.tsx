@@ -153,7 +153,7 @@ export function MySidebar({ children, user }:SidebarProps) {
             const classURL = `/class/${classInfo.classUUID}`;
 
             const gradeSidebar:sidebarItem ={
-                title: "Grades",
+                title: "My Attempts",
                 url: classURL+"/grade/"
             }
             const quizSidebar:sidebarItem ={

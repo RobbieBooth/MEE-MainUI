@@ -252,7 +252,7 @@ export default function Dashboard() {
                                                                            createOrEdit={"Edit"}
                                                                            availableQuizBeingEdited={quiz}/>
                                                 }
-                            />
+                             includeViewAttempts={true}/>
                         </ScrollArea>
                     </ResizablePanel>
                 </ResizablePanelGroup>

@@ -159,7 +159,7 @@ export function QuizVersionTable({classID, quizzesVersions, isEducator}:{ classI
     )
 }
 
-export function AvailableQuizTable({userMap, classID, user, availableQuizzes, isEducator, editQuizButton}:{ userMap: UserMap, classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean, editQuizButton: (quiz:AvailableQuiz)=> ReactNode}) {
+export function AvailableQuizTable({userMap, classID, user, availableQuizzes, isEducator, editQuizButton, includeViewAttempts}:{ userMap: UserMap, classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean, editQuizButton: (quiz:AvailableQuiz)=> ReactNode, includeViewAttempts:boolean}) {
     const navigate = useNavigate();
 
     const handleGoToQuiz = (uuid:string) => {
@@ -168,7 +168,7 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
 
     return (
         <Table>
-            <TableCaption>Available Quizzes</TableCaption>
+            {/*<TableCaption>Available Quizzes</TableCaption>*/}
             <TableHeader>
                 <TableRow>
                     <TableHead className="">Quiz ID</TableHead>
@@ -177,7 +177,7 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
                     <TableHead className="">Max Attempts</TableHead>
                     {!isEducator && <TableHead className="text-right">Start Quiz</TableHead>}
                     {isEducator && <TableHead className="text-right">Edit Quiz</TableHead>}
-                    <TableHead className="text-right">View Attempts</TableHead>
+                    {includeViewAttempts && <TableHead className="text-right">View Attempts</TableHead>}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -207,8 +207,9 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
                                 </Button></TableCell>}
                             {isEducator &&
                                 <TableCell className="text-right">{editQuizButton(quiz)}</TableCell>}
-                            <TableCell className="text-right"><AttemptsDialog  availableQuizID={quiz.id} studentAttempts={quiz.studentAttempts} isEducator={isEducator} disabled={false} classID={classID} userMap={userMap} quizID={quiz.quizInfo.quizID}/></TableCell>
-                            {/*<TableCell><Button onClick={()=>handleGoToQuiz(uuid)}>{buttonTitle}</Button></TableCell>*/}
+                            {includeViewAttempts &&
+                                <TableCell className="text-right"><AttemptsDialog  availableQuizID={quiz.id} studentAttempts={quiz.studentAttempts} isEducator={isEducator} disabled={false} classID={classID} userMap={userMap} quizID={quiz.quizInfo.quizID}/></TableCell>
+                            }
                         </TableRow>
                     );
                 })
