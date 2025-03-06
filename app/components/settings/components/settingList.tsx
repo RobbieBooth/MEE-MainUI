@@ -36,7 +36,7 @@ export function SettingList({
                                  setValue,
                        }: {
     listSetting: ListSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
     register: any,
     setValue: any,
 }): JSX.Element {

@@ -25,7 +25,7 @@ export function SelectSettingComponent(
         updateValue,
     }:{
         selectSetting:SelectSetting
-        control: any; // Update with the correct type from your form library
+        control: any;
         updateValue?: (value:string[]) => void;
 }) {
     return(

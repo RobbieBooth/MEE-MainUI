@@ -3,8 +3,13 @@ import {authenticate, OAuthUser} from "~/auth.server";
 import {useLoaderData} from "@remix-run/react";
 import {MySidebar} from "~/routes/dashboard";
 import {toast} from "sonner";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Skeleton} from "~/components/ui/skeleton";
+import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "~/components/ui/resizable";
+import {ClassTable} from "~/components/classes/classTable";
+import {AvailableQuizTable} from "~/components/quizSection/quizDisplayPage";
+import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQuizForm";
+import {ScrollArea} from "~/components/ui/scroll-area";
 
 // TypeScript type for Class
 export type Class = {
@@ -118,7 +123,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
     const user = await authenticate(request, `/class/${classUUID}`);
 
-    // Fetch the class data from your backend API
+    //Fetch the class data from your backend API
     const classData = await getClassFromBackend(classUUID, user);
     // const userMap = await getUserMap(classData);
 
@@ -136,6 +141,7 @@ export default function Dashboard() {
         user: OAuthUser;
         classData: Class;
     };
+    const [classDataHolder, setClassDataHolder] = useState<Class>();
 
     useEffect(() => {
         const fetchUserMap = async () => {
@@ -145,78 +151,112 @@ export default function Dashboard() {
         };
 
         fetchUserMap();
+        setClassDataHolder(classData);
     }, [classData]);
 
 
     return (
         <MySidebar user={user}>
-            <div>
-                <h1>Class Details</h1>
-                <p>Class Name: {classData.className}</p>
-                <p>Description: {classData.classDescription}</p>
-                {/*<p>Educators: {classData.educators.map((educatorUUID) => {*/}
-                {/*    const usersDetails = userDetailMap.get(educatorUUID);*/}
-                {/*    if (usersDetails) {*/}
-                {/*        return usersDetails.name ?? usersDetails.email;*/}
-                {/*    }*/}
-                {/*    return "UNKNOWN";*/}
-                {/*}).join(", ")}</p>*/}
-                <div>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Lecturer Name</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {classData.educators.map((educatorUUID) => {
+            {classDataHolder == undefined ? "Loading... Class Data" :
+                <ResizablePanelGroup
+                    direction="vertical"
+                    className="h-screen w-full rounded-lg border"
+                >
+                    <ResizablePanel defaultSize={15}>
+                        <ResizablePanelGroup direction="horizontal">
+                            <ResizablePanel defaultSize={50}>
+                                <div className="block h-full items-center justify-center p-6">
+                                    <div>
+                                        <span className="font-semibold">Class Name:</span>
+                                        <p>{classDataHolder.className}</p>
+                                    </div>
+                                    <div className="pt-2">
+                                        <span className="font-semibold">Class Description:</span>
+                                        <p>{classDataHolder.classDescription}</p>
+                                    </div>
+                                </div>
+                            </ResizablePanel>
+                            <ResizableHandle/>
+                            <ResizablePanel defaultSize={50}>
+                                <ScrollArea className="h-full w-full rounded-md p-6">
+                                    <div className="block h-full">
+                                        <div>
+                                            <table>
+                                                <thead>
+                                                <tr>
+                                                    <th className="text-left">Lecturer Name</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {classDataHolder.educators.map((educatorUUID) => {
 
-                            return (
-                                <tr key={educatorUUID}>
-                                    <td>
-                                        {isLoadingUserDetailMap ? (
-                                            // Show skeleton loader while data is loading
-                                            <Skeleton className="w-24 h-4"/>
-                                        ) : (
-                                            // Once data is loaded, display educator's name
-                                            userDetailMap == null ? "ERROR" : getUsersName(userDetailMap, educatorUUID)
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        </tbody>
-                    </table>
-                </div>
-                <div>
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Student Name</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {classData.students.map((studentUUID) => {
-
-                            return (
-                                <tr key={studentUUID}>
-                                    <td>
-                                        {isLoadingUserDetailMap ? (
-                                            // Show skeleton loader while data is loading
-                                            <Skeleton className="w-24 h-4"/>
-                                        ) : (
-                                            // Once data is loaded, display educator's name
-                                            userDetailMap == null ? "ERROR" : getUsersName(userDetailMap, studentUUID)
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        </tbody>
-                    </table>
-                </div>
-                {/*<p>Students: {classData.students?.join(", ")}</p>*/}
-            </div>
+                                                    return (
+                                                        <tr key={educatorUUID}>
+                                                            <td>
+                                                                {isLoadingUserDetailMap ? (
+                                                                    // Show skeleton loader while data is loading
+                                                                    <Skeleton className="w-24 h-4"/>
+                                                                ) : (
+                                                                    // Once data is loaded, display educator's name
+                                                                    userDetailMap == null ? "ERROR" : getUsersName(userDetailMap, educatorUUID)
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="pt-2">
+                                            <table>
+                                                <thead>
+                                                <tr>
+                                                    <th className="text-left">Student Name</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {classDataHolder.students.map((studentUUID) => {
+                                                    return (
+                                                        <tr key={studentUUID}>
+                                                            <td>
+                                                                {isLoadingUserDetailMap ? (
+                                                                    // Show skeleton loader while data is loading
+                                                                    <Skeleton className="w-24 h-4"/>
+                                                                ) : (
+                                                                    // Once data is loaded, display educator's name
+                                                                    userDetailMap == null ? "ERROR" : getUsersName(userDetailMap, studentUUID)
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </ScrollArea>
+                            </ResizablePanel>
+                        </ResizablePanelGroup>
+                    </ResizablePanel>
+                    <ResizableHandle/>
+                    <ResizablePanel defaultSize={50}>
+                        <ScrollArea className="flex items-center justify-center h-full w-full rounded-md p-6">
+                            <AvailableQuizTable availableQuizzes={classDataHolder.availableQuizzes} user={user}
+                                                classID={classDataHolder.id} isEducator={false}
+                                                userMap={userDetailMap ?? new Map<string, userDetails>()}
+                                                editQuizButton={
+                                                    (quiz: AvailableQuiz) =>
+                                                        <AvailableQuizForm currentClass={classDataHolder} user={user}
+                                                                           userMap={userDetailMap!}
+                                                                           updateClass={setClassDataHolder}
+                                                                           createOrEdit={"Edit"}
+                                                                           availableQuizBeingEdited={quiz}/>
+                                                }
+                            />
+                        </ScrollArea>
+                    </ResizablePanel>
+                </ResizablePanelGroup>
+            }
         </MySidebar>
     );
 }

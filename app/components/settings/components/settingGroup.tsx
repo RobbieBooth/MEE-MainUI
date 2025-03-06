@@ -13,7 +13,7 @@ export function SettingGroup({
                                  setValue,
                        }: {
     groupSetting: GroupSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
     register: any,
     setValue: any,
 }): JSX.Element {

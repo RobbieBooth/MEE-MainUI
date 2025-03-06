@@ -5,7 +5,7 @@ import SockJS from "sockjs-client";
 import {StudentQuestionAttempt, StudentQuizAttempt} from "~/components/MEETypes/studentAttempt";
 import {EventDetails} from "~/components/quizSection/quizEventTypes";
 
-// Define the structure of your messages
+// Define the structure of the messages
 interface StompMessage {
     content: string;
 }

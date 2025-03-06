@@ -17,7 +17,7 @@ import { LoaderFunction } from "@remix-run/node";
 import {authenticate, OAuthUser} from "~/auth.server";
 import { useLoaderData } from "@remix-run/react";
 import {IUser} from "~/db/model/user";
-import {BookOpen, Bot, Settings2, SquareTerminal, GraduationCap} from "lucide-react";
+import {BookOpen, Bot, Settings2, SquareTerminal, GraduationCap, LayoutDashboard} from "lucide-react";
 
 import {ReactNode, useEffect, useState} from "react";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "~/components/ui/resizable";
@@ -46,7 +46,7 @@ export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUse
     const user = await authenticate(request, "/dashboard");
     // use the user data here
 
-    //Fetch the class data from your backend API
+    //Fetch the class data from backend API
     const classes = await getClassesFromBackend(user);
 
     return { user, classes };
@@ -172,16 +172,21 @@ export function MySidebar({ children, user }:SidebarProps) {
             };
             return side;
         });
+        const dashboardSidebarItem:sidebarItem = {
+            title: "Dashboard",
+            url: "/dashboard",
+            icon: LayoutDashboard
+        };
         const classSidebar:sidebarItem = {
             title: "Classes",
             url: "/class",
             children:newSidebarItems,
             isActive: true,
             icon: GraduationCap
-        }
+        };
 
 
-        setSidebarItems([classSidebar]);
+        setSidebarItems([dashboardSidebarItem, classSidebar]);
         //Update links for classes
     }, [userData]);
 
@@ -193,17 +198,17 @@ export function MySidebar({ children, user }:SidebarProps) {
                 <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4">
                     <SidebarTrigger className="-ml-1"/>
                     <Separator orientation="vertical" className="mr-2 h-4"/>
-                    <Breadcrumb>
-                        <BreadcrumbList>
-                            <BreadcrumbItem className="hidden md:block">
-                                <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator className="hidden md:block"/>
-                            <BreadcrumbItem>
-                                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
+                    {/*<Breadcrumb>*/}
+                    {/*    <BreadcrumbList>*/}
+                    {/*        <BreadcrumbItem className="hidden md:block">*/}
+                    {/*            <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>*/}
+                    {/*        </BreadcrumbItem>*/}
+                    {/*        /!*<BreadcrumbSeparator className="hidden md:block"/>*!/*/}
+                    {/*        /!*<BreadcrumbItem>*!/*/}
+                    {/*        /!*    <BreadcrumbPage>Data Fetching</BreadcrumbPage>*!/*/}
+                    {/*        /!*</BreadcrumbItem>*!/*/}
+                    {/*    </BreadcrumbList>*/}
+                    {/*</Breadcrumb>*/}
                 </header>
                 {children}
             </SidebarInset>

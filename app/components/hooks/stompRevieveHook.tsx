@@ -3,7 +3,7 @@ import {Client, IMessage} from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
 interface StompMessage {
-    content: string; // Adjust this type based on your backend response
+    content: string; // Adjust this type based on backend response
 }
 
 export function useStomp() {

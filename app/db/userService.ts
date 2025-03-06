@@ -90,7 +90,7 @@ export const getOrCreateUsersByEmails = async (emails: string[], accessJWT: stri
 
     // Create users for missing emails
     const newUsers = await User.insertMany(
-        missingEmails.map(email => ({ email })) // Adjust fields based on your schema
+        missingEmails.map(email => ({ email }))
     );
     const newUsersIds = newUsers.map((user)=> user.id);
     if(newUsersIds.length > 0) {

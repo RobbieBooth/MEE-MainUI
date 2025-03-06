@@ -12,7 +12,7 @@ export function SettingDate(
 
     }:{
         dateSetting:DateSetting
-        control: any; // Update with the correct type from your form library
+        control: any;
     }
 ) {
 

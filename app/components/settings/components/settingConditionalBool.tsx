@@ -11,7 +11,7 @@ export function SettingConditionalBool({
                                        setValue,
                        }: {
     conditionalSetting: ConditionalBoolSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
     register: any,
     setValue: any,
 }): JSX.Element {

@@ -21,7 +21,7 @@ export function SettingConditionalSelect({
                                            setValue,
                                        }: {
     conditionalSelect: ConditionalSelectSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
     register: any,
     setValue: any,
 }): JSX.Element {
