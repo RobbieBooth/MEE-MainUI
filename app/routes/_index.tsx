@@ -55,6 +55,8 @@ export default function Index() {
   );
 }
 
+const documentation_URL = import.meta.env.VITE_DOCUMENTATION_URL ?? "#";
+
 const resources = [
   {
     href: "/login",
@@ -79,7 +81,7 @@ const resources = [
     newPage: false,
   },
   {
-    href: "https://devweb2024.cis.strath.ac.uk/xbb21163/",
+    href: documentation_URL,
     text: "Application Documentation",
     icon: (
       <svg
