@@ -344,7 +344,7 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
                         <span
                             className="h-min">Question {studentQuizAttempt.questions.findIndex(question => question.studentQuestionAttemptUUID === currentQuestion.studentQuestionAttemptUUID) + 1}</span>
                         <FlagManager isFlagged={currentQuestion.flagged}
-                                     setFlagged={(flag: boolean) => setFlagged(currentQuestion, flag)}/>
+                                     setFlagged={(flag: boolean) => setFlagged(currentQuestion, flag)} inSideBar={false}/>
 
                     </div>
                     <div className="grow">
