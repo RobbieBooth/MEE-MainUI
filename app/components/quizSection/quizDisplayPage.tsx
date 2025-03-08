@@ -27,6 +27,8 @@ import {ScrollArea} from "~/components/ui/scroll-area";
 import {FormProvider} from "react-hook-form";
 import {renderSetting} from "~/components/settings/renderSetting";
 import {AttemptsDialog} from "~/components/quizSection/studentAttemptsPage";
+import { toast } from "sonner";
+import NoItemsFound from "~/components/tables/noItemsFound";
 
 export function QuizTable({classID, user, quizzes, isEducator}:{ classID:string, user:OAuthUser, quizzes:QuizInfo[], isEducator: boolean}) {
     const [quizMap,setQuizMap] = useState<Record<string, { latest: QuizInfo; versions: QuizInfo[] }>>({});
@@ -56,7 +58,6 @@ export function QuizTable({classID, user, quizzes, isEducator}:{ classID:string,
 
     return (
         <Table>
-            <TableCaption>Available Quizzes</TableCaption>
             <TableHeader>
                 <TableRow>
                     <TableHead className="">Quiz ID</TableHead>
@@ -96,6 +97,12 @@ export function QuizTable({classID, user, quizzes, isEducator}:{ classID:string,
                     );
                 })
                 }
+
+                {Object.values(quizMap).length === 0 && <TableRow>
+                    <TableCell colSpan={isEducator ? 8 : 6} className="text-center py-4">
+                        <NoItemsFound message={"No quizzes found..."}/>
+                    </TableCell>
+                </TableRow>}
             </TableBody>
         </Table>
     )
@@ -154,6 +161,11 @@ export function QuizVersionTable({classID, quizzesVersions, isEducator}:{ classI
                     );
                 })
                 }
+                {sortedQuizzes.length === 0 && <TableRow>
+                    <TableCell colSpan={5} className="text-center py-4">
+                        <NoItemsFound message={"No versions found..."}/>
+                    </TableCell>
+                </TableRow>}
             </TableBody>
         </Table>
     )
@@ -219,12 +231,15 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
                     );
                 })
                 }
+                {availableQuizzes.length === 0 && <TableRow>
+                    <TableCell colSpan={(isEducator ? 7 : 5) + (includeViewAttempts ? 1 : 0)} className="text-center py-4">
+                        <NoItemsFound message={"No available quizzes found..."}/>
+                    </TableCell>
+                </TableRow>}
             </TableBody>
         </Table>
     )
 }
-
-import { toast } from "sonner";
 
 export const deleteAvailableQuiz = async (classID: string, availableQuizUUID: string, authToken: string): Promise<boolean> => {
     try {

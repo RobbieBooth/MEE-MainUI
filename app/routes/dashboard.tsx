@@ -23,6 +23,8 @@ import {ReactNode, useEffect, useState} from "react";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "~/components/ui/resizable";
 import {Class, getClassFromBackend} from "~/routes/class.$classUUID._index";
 import {ClassTable} from "~/components/classes/classTable";
+import {Button} from "~/components/ui/button";
+import {useNavigate} from "react-router";
 
 export async function getClassesFromBackend(user: OAuthUser) {
     const response = await fetch("http://localhost:8080/v1/api/class/", {
@@ -54,6 +56,7 @@ export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUse
 
 export default function Dashboard() {
     const { user, classes } = useLoaderData<typeof loader>() as {user: OAuthUser, classes: Class[]};
+    const navigator = useNavigate();
 
     return (
         <MySidebar user={user}>
@@ -65,13 +68,15 @@ export default function Dashboard() {
                     <ResizablePanelGroup direction="horizontal">
                         <ResizablePanel defaultSize={50}>
                             <div className="flex h-full items-center justify-center p-6">
-                                <span className="font-semibold">One</span>
+                                <h2 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+                                    Welcome back!
+                                </h2>
                             </div>
                         </ResizablePanel>
-                        <ResizableHandle />
+                        <ResizableHandle/>
                         <ResizablePanel defaultSize={50}>
                             <div className="flex h-full items-center justify-center p-6">
-                                <span className="font-semibold">Two</span>
+                                <Button onClick={()=> navigator("/class")}>View My Classes</Button>
                             </div>
                         </ResizablePanel>
                     </ResizablePanelGroup>

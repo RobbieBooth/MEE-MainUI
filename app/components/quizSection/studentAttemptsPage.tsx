@@ -4,6 +4,7 @@ import {Button} from "~/components/ui/button";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "~/components/ui/table";
 import React from "react";
 import {useNavigate} from "react-router";
+import NoItemsFound from "~/components/tables/noItemsFound";
 
 export function AttemptsDialog({userMap, classID, studentAttempts, isEducator, disabled, availableQuizID, quizID}:{ userMap:UserMap, classID:string, studentAttempts:SampleStudentAttempt[], isEducator: boolean, disabled:boolean, availableQuizID: string,  quizID:string}) {
     return(
@@ -53,6 +54,11 @@ export function StudentAttemptsTable({userMap, classID, studentAttempts, isEduca
                     );
                 })
                 }
+                {studentAttempts.length === 0 && <TableRow>
+                    <TableCell colSpan={3} className="text-center py-4">
+                        <NoItemsFound message={"No student attempts found..."}/>
+                    </TableCell>
+                </TableRow>}
             </TableBody>
         </Table>
     )

@@ -7,6 +7,7 @@ import {Infinity} from "lucide-react";
 import {Button} from "~/components/ui/button";
 import {AttemptsDialog} from "~/components/quizSection/studentAttemptsPage";
 import {ClassForm} from "~/components/classes/creation/classCreation";
+import NoItemsFound from "~/components/tables/noItemsFound";
 
 export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
     const navigate = useNavigate();
@@ -71,6 +72,11 @@ export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
                     );
                 })
                 }
+                {classes.length === 0 && <TableRow>
+                    <TableCell colSpan={6} className="text-center py-4">
+                        <NoItemsFound message={"No classes found... consider going to classes page to create one!"}/>
+                    </TableCell>
+                </TableRow>}
             </TableBody>
         </Table>
     )
