@@ -63,7 +63,7 @@ export default function SettingPage(){
                     (quiz:AvailableQuiz)=>
                     <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder} createOrEdit={"Edit"} availableQuizBeingEdited={quiz} />
                 }
-                />
+                 includeViewAttempts={true}/>
             }
 
             {classDataHolder == undefined ? "Loading... Class Data" :
