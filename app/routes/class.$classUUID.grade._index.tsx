@@ -4,7 +4,7 @@ import {Class, getClassFromBackend, userDetails, UserMap} from "~/routes/class.$
 import {MySidebar} from "~/routes/dashboard";
 import {useLoaderData} from "@remix-run/react";
 import {useEffect, useState} from "react";
-import {AvailableQuizTable} from "~/components/quizSection/quizDisplayPage";
+import {AvailableQuizTable, deleteAvailableQuiz} from "~/components/quizSection/quizDisplayPage";
 import {StudentAttemptsTable} from "~/components/quizSection/studentAttemptsPage";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "~/components/ui/accordion";
 import {Separator} from "~/components/ui/separator";
@@ -57,7 +57,8 @@ export default function Dashboard() {
                                 <AvailableQuizTable availableQuizzes={[quiz]} classID={classData.id}
                                                     editQuizButton={() => null} isEducator={false} user={user}
                                                     userMap={new Map<string, userDetails>()}
-                                                    includeViewAttempts={false}/>
+                                                    includeViewAttempts={false} deleteAvailableQuiz={(availableQuizUUID: string) => {}}/>
+                                {/*We dont need to define deleteAvailableQuiz fn here since we arent deleting or editing*/}
 
                                 <Accordion type="single" collapsible>
                                     <AccordionItem value="item-1">

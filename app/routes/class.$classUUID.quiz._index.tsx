@@ -14,7 +14,7 @@ import {
 import {MySidebar} from "~/routes/dashboard";
 import {Button} from "~/components/ui/button";
 import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQuizForm";
-import {AvailableQuizTable, QuizTable} from "~/components/quizSection/quizDisplayPage";
+import {AvailableQuizTable, deleteAvailableQuiz, QuizTable} from "~/components/quizSection/quizDisplayPage";
 
 export const loader: LoaderFunction = async ({ request, params }):Promise<{ user: OAuthUser; classUUID: string, classData:Class }> => {
     const { classUUID } = params;
@@ -63,7 +63,19 @@ export default function SettingPage(){
                     (quiz:AvailableQuiz)=>
                     <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder} createOrEdit={"Edit"} availableQuizBeingEdited={quiz} />
                 }
-                 includeViewAttempts={true}/>
+                 includeViewAttempts={true} deleteAvailableQuiz={(availableQuizUUID: string) => {
+                     const success = deleteAvailableQuiz(classUUID, availableQuizUUID, user.backendJWT ?? "");
+                     success.then((value) =>{
+                         if(value){
+                             if(classDataHolder == undefined){
+                                 return;
+                             }
+                             const newClass:Class = {...classDataHolder};
+                             newClass.availableQuizzes = newClass.availableQuizzes.filter((quiz) => quiz.id !== availableQuizUUID);
+                             setClassDataHolder(newClass);
+                         }
+                     });
+                }}/>
             }
 
             {classDataHolder == undefined ? "Loading... Class Data" :

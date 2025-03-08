@@ -7,7 +7,7 @@ import React, {useEffect, useState} from "react";
 import {Skeleton} from "~/components/ui/skeleton";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "~/components/ui/resizable";
 import {ClassTable} from "~/components/classes/classTable";
-import {AvailableQuizTable} from "~/components/quizSection/quizDisplayPage";
+import {AvailableQuizTable, deleteAvailableQuiz} from "~/components/quizSection/quizDisplayPage";
 import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQuizForm";
 import {ScrollArea} from "~/components/ui/scroll-area";
 
@@ -242,7 +242,8 @@ export default function Dashboard() {
                     <ResizablePanel defaultSize={50}>
                         <ScrollArea className="flex items-center justify-center h-full w-full rounded-md p-6">
                             <AvailableQuizTable availableQuizzes={classDataHolder.availableQuizzes} user={user}
-                                                classID={classDataHolder.id} isEducator={false}
+                                                classID={classDataHolder.id}
+                                                isEducator={true}
                                                 userMap={userDetailMap ?? new Map<string, userDetails>()}
                                                 editQuizButton={
                                                     (quiz: AvailableQuiz) =>
@@ -252,7 +253,22 @@ export default function Dashboard() {
                                                                            createOrEdit={"Edit"}
                                                                            availableQuizBeingEdited={quiz}/>
                                                 }
-                             includeViewAttempts={true}/>
+                             includeViewAttempts={true}
+                                                deleteAvailableQuiz={(availableQuizUUID: string) => {
+                                const success = deleteAvailableQuiz(classDataHolder.id, availableQuizUUID, user.backendJWT ?? "");
+                                success.then((value) => {
+                                    if (value) {
+                                        if (classDataHolder == undefined) {
+                                            return;
+                                        }
+                                        const newClass: Class = {...classDataHolder};
+                                        newClass.availableQuizzes = newClass.availableQuizzes.filter((quiz) => quiz.id !== availableQuizUUID);
+                                        setClassDataHolder(newClass);
+                                    }
+                                });
+                                }
+                            }
+                                />
                         </ScrollArea>
                     </ResizablePanel>
                 </ResizablePanelGroup>

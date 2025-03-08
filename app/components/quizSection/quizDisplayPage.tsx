@@ -11,7 +11,7 @@ import {
 import {Button} from "~/components/ui/button";
 import {useNavigate} from "react-router";
 import {AvailableQuiz, QuizInfo, UserMap} from "~/routes/class.$classUUID._index";
-import {Ellipsis, Infinity} from "lucide-react";
+import {Ellipsis, Infinity, Trash2} from "lucide-react";
 import {OAuthUser} from "~/auth.server";
 import React, {ReactNode, useEffect, useState} from "react";
 import {
@@ -159,7 +159,7 @@ export function QuizVersionTable({classID, quizzesVersions, isEducator}:{ classI
     )
 }
 
-export function AvailableQuizTable({userMap, classID, user, availableQuizzes, isEducator, editQuizButton, includeViewAttempts}:{ userMap: UserMap, classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean, editQuizButton: (quiz:AvailableQuiz)=> ReactNode, includeViewAttempts:boolean}) {
+export function AvailableQuizTable({userMap, classID, user, availableQuizzes, isEducator, editQuizButton, includeViewAttempts, deleteAvailableQuiz}:{ userMap: UserMap, classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean, editQuizButton: (quiz:AvailableQuiz)=> ReactNode, includeViewAttempts:boolean, deleteAvailableQuiz: (availableQuizUUID: string) => void}) {
     const navigate = useNavigate();
 
     const handleGoToQuiz = (uuid:string) => {
@@ -175,9 +175,10 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
                     <TableHead className="">Quiz Name</TableHead>
                     <TableHead className="">Question Count</TableHead>
                     <TableHead className="">Max Attempts</TableHead>
-                    {!isEducator && <TableHead className="text-right">Start Quiz</TableHead>}
-                    {isEducator && <TableHead className="text-right">Edit Quiz</TableHead>}
+                    <TableHead className="text-right">Start Quiz</TableHead>
                     {includeViewAttempts && <TableHead className="text-right">View Attempts</TableHead>}
+                    {isEducator && <TableHead className="text-right">Edit Quiz</TableHead>}
+                    {isEducator && <TableHead className="text-right">Delete Quiz</TableHead>}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -200,16 +201,20 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
                             <TableCell className="font-medium">{quiz.quizInfo.questionCount}</TableCell>
                             <TableCell className="font-medium">{quiz.maxAttemptCount == undefined ?
                                 <Infinity/> : `${studentsAttemptsAtQuiz} / ${quiz.maxAttemptCount}`}</TableCell>
-                            {!isEducator &&
-                                <TableCell className="text-right"><Button onClick={() => handleGoToQuiz(quiz.id)}
-                                                                          disabled={studentMaxAttemptsReached}>
-                                    Start Quiz
-                                </Button></TableCell>}
-                            {isEducator &&
-                                <TableCell className="text-right">{editQuizButton(quiz)}</TableCell>}
+                            <TableCell className="text-right"><Button onClick={() => handleGoToQuiz(quiz.id)}
+                                                                      disabled={studentMaxAttemptsReached}>
+                                Start Quiz
+                            </Button></TableCell>
+
                             {includeViewAttempts &&
                                 <TableCell className="text-right"><AttemptsDialog  availableQuizID={quiz.id} studentAttempts={quiz.studentAttempts} isEducator={isEducator} disabled={false} classID={classID} userMap={userMap} quizID={quiz.quizInfo.quizID}/></TableCell>
                             }
+
+                            {isEducator &&
+                                <TableCell className="text-right">{editQuizButton(quiz)}</TableCell>}
+
+                            {isEducator &&
+                                <TableCell className="text-right"><Button size={"icon"} variant="destructive" onClick={() => deleteAvailableQuiz(quiz.id)}><Trash2/></Button></TableCell>}
                         </TableRow>
                     );
                 })
@@ -218,3 +223,29 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
         </Table>
     )
 }
+
+import { toast } from "sonner";
+
+export const deleteAvailableQuiz = async (classID: string, availableQuizUUID: string, authToken: string): Promise<boolean> => {
+    try {
+        const response = await fetch(`http://localhost:8080/v1/api/class/${classID}/quiz/available/${availableQuizUUID}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${authToken}`
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(await response.text() || "Failed to delete available quiz");
+        }
+
+        toast.success("Available quiz deleted successfully!");
+        return true;
+    } catch (error) {
+        const message = error instanceof Error ? error.message : "An unknown error occurred.";
+        toast.error(message);
+        return false;
+    }
+};
+
