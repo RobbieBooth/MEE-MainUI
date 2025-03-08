@@ -9,6 +9,7 @@ import {StudentAttemptsTable} from "~/components/quizSection/studentAttemptsPage
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "~/components/ui/accordion";
 import {Separator} from "~/components/ui/separator";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "~/components/ui/card";
+import NoItemsFound from "~/components/tables/noItemsFound";
 
 export const loader: LoaderFunction = async ({ params, request }) => {
     const { classUUID } = params;
@@ -77,33 +78,12 @@ export default function Dashboard() {
                                 </Accordion>
                             </CardContent>
                         </Card>
-                        // <div key={quiz.id} className="mt-8">
-                        //     <h2 className="scroll-m-20 border-b pb-2 text-2xl font-semibold tracking-tight first:mt-0">
-                        //         {quiz.quizInfo.quizName}
-                        //     </h2>
-                        //     {/*<h1>Student Attempts: {studentsAttempts.length}</h1>*/}
-                        //     {/*We are using an empty user map since we don't need it since we aren't viewing attempts and well it isn't worth calling api to get it when it's not needed*/}
-                        //     <AvailableQuizTable availableQuizzes={[quiz]} classID={classData.id}
-                        //                         editQuizButton={() => null} isEducator={false} user={user}
-                        //                         userMap={new Map<string, userDetails>()} includeViewAttempts={false}/>
-                        //     <Accordion type="single" collapsible>
-                        //         <AccordionItem value="item-1">
-                        //             <AccordionTrigger>View My Attempts ({studentsAttempts.length})</AccordionTrigger>
-                        //             <AccordionContent>
-                        //                 <StudentAttemptsTable
-                        //                     userMap={new Map<string, userDetails>([
-                        //                         [userID, {name: user.name, email: user.email ?? "UNKNOWN"}] // Example default value
-                        //                     ])}
-                        //                     classID={classData.id} studentAttempts={studentsAttempts} isEducator={true}
-                        //                     availableQuizID={quiz.id}/>
-                        //             </AccordionContent>
-                        //         </AccordionItem>
-                        //     </Accordion>
-                        //     {/*<Separator/>*/}
-                        // </div>
                     );
 
                 })}
+                {classData.availableQuizzes.length === 0 && (
+                    <NoItemsFound message={"No available quizzes or attempts are found..."}/>
+                )}
             </div>
 
         </MySidebar>
