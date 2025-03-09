@@ -90,93 +90,93 @@ async function getMicrosoftUser(accessToken: string, request: Request): Promise<
     };
 }
 
-if(!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET){
-    throw new Error("Oauth ClientID or Client secret not defined")
-}
+// if(!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET){
+//     throw new Error("Oauth ClientID or Client secret not defined")
+// }
+//
+// authenticator.use(
+//     new OAuth2Strategy(
+//         {
+//             cookie: "oauth2", // Optional, can also be an object with more options
+//
+//             clientId: process.env.GITHUB_CLIENT_ID,
+//             clientSecret: process.env.GITHUB_CLIENT_SECRET,
+//
+//             authorizationEndpoint: "https://github.com/login/oauth/authorize",
+//             tokenEndpoint: "https://github.com/login/oauth/access_token",
+//             redirectURI: "http://localhost:5173/auth/github/callback",
+//             scopes: ["openid", "user:email", "profile"], // optional
+//             codeChallengeMethod: CodeChallengeMethod.S256, // optional
+//         },
+//         async ({ tokens, request }) => {
+//
+//             const user = await getGithubUser(tokens.accessToken(), request);
+//             let userDB = await getUserByEmail(user.email!);
+//             if(userDB == null) {
+//                 userDB = await createUser({
+//                     email: user.email!,
+//                     name: user.name,
+//                     openId: user.openId,
+//                 } as any);
+//             }
+//             user.associatedDBUser = userDB;
+//             user.backendJWT = generateJwt(userDB._id, userDB.roles);
+//             return user;
+//         }
+//     ),
+//
+//     "github"
+// );
 
-authenticator.use(
-    new OAuth2Strategy(
-        {
-            cookie: "oauth2", // Optional, can also be an object with more options
 
-            clientId: process.env.GITHUB_CLIENT_ID,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET,
-
-            authorizationEndpoint: "https://github.com/login/oauth/authorize",
-            tokenEndpoint: "https://github.com/login/oauth/access_token",
-            redirectURI: "http://localhost:5173/auth/github/callback",
-            scopes: ["openid", "user:email", "profile"], // optional
-            codeChallengeMethod: CodeChallengeMethod.S256, // optional
-        },
-        async ({ tokens, request }) => {
-
-            const user = await getGithubUser(tokens.accessToken(), request);
-            let userDB = await getUserByEmail(user.email!);
-            if(userDB == null) {
-                userDB = await createUser({
-                    email: user.email!,
-                    name: user.name,
-                    openId: user.openId,
-                } as any);
-            }
-            user.associatedDBUser = userDB;
-            user.backendJWT = generateJwt(userDB._id, userDB.roles);
-            return user;
-        }
-    ),
-
-    "github"
-);
-
-
-async function getGithubUser(accessToken: string, request: Request): Promise<OAuthUser> {
-    const response = await fetch("https://api.github.com/user", {
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: "application/json",
-        },
-    });
-
-    if (!response.ok) {
-        throw new Error("Failed to fetch user profile from GitHub");
-    }
-
-    const profile = await response.json();
-    // Fetch the user's emails
-    const emailResponse = await fetch("https://api.github.com/user/emails", {
-        method: "GET",
-        headers: {
-            "Accept": "application/vnd.github+json",
-            "Authorization": `Bearer ${accessToken}`,
-            "X-GitHub-Api-Version": "2022-11-28",
-        },
-    });
-    if (!emailResponse.ok) {
-        throw new Error(`Error: ${emailResponse.status} ${emailResponse.statusText}`);
-    }
-
-    const emails = await emailResponse.json();
-    const primaryEmail = emails.find((email: { primary: boolean }) => email.primary);
-
-    if (primaryEmail) {
-        console.log("Primary Email:", primaryEmail.email);
-    } else {
-        console.log("No primary email found.");
-    }
-
-    return {
-        backendJWT: undefined,
-        associatedDBUser: undefined,
-        openId: profile.id.toString(),
-        name: profile.name || profile.login,
-        email: primaryEmail.email, // GitHub may return null if email is private
-        avatar: {
-            requestPictureWithAccessToken: false,
-            avatarUrl: profile.avatar_url
-        },
-        accessToken:"accessToken"
-    };
-}
+// async function getGithubUser(accessToken: string, request: Request): Promise<OAuthUser> {
+//     const response = await fetch("https://api.github.com/user", {
+//         headers: {
+//             Authorization: `Bearer ${accessToken}`,
+//             Accept: "application/json",
+//         },
+//     });
+//
+//     if (!response.ok) {
+//         throw new Error("Failed to fetch user profile from GitHub");
+//     }
+//
+//     const profile = await response.json();
+//     // Fetch the user's emails
+//     const emailResponse = await fetch("https://api.github.com/user/emails", {
+//         method: "GET",
+//         headers: {
+//             "Accept": "application/vnd.github+json",
+//             "Authorization": `Bearer ${accessToken}`,
+//             "X-GitHub-Api-Version": "2022-11-28",
+//         },
+//     });
+//     if (!emailResponse.ok) {
+//         throw new Error(`Error: ${emailResponse.status} ${emailResponse.statusText}`);
+//     }
+//
+//     const emails = await emailResponse.json();
+//     const primaryEmail = emails.find((email: { primary: boolean }) => email.primary);
+//
+//     if (primaryEmail) {
+//         console.log("Primary Email:", primaryEmail.email);
+//     } else {
+//         console.log("No primary email found.");
+//     }
+//
+//     return {
+//         backendJWT: undefined,
+//         associatedDBUser: undefined,
+//         openId: profile.id.toString(),
+//         name: profile.name || profile.login,
+//         email: primaryEmail.email, // GitHub may return null if email is private
+//         avatar: {
+//             requestPictureWithAccessToken: false,
+//             avatarUrl: profile.avatar_url
+//         },
+//         accessToken:"accessToken"
+//     };
+// }
 
 export async function authenticate(request: Request, returnTo?: string):Promise<OAuthUser> {
     const session = await sessionStorage.getSession(request.headers.get("cookie"));
