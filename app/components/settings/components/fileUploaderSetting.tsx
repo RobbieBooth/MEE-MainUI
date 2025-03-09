@@ -13,7 +13,7 @@ export function FileUploaderSetting({
                                         control,
                                     }: {
     fileSetting: FileInputSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
 }): JSX.Element {
     const [dropZoneConfig, setDropZoneConfig] = useState({});
 

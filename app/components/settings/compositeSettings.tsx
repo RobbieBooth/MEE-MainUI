@@ -3,10 +3,15 @@ import {v4 as uuidv4} from "uuid";
 import {IDStore, Operations, SettingListOperation} from "~/components/settings/components/settingList";
 
 export enum SettingType {
+    //leafs
     Toggle = "Toggle",
     Input = "Input",
+    TagInput = "TagInput",
     Select = "Select",
     File = "File",
+    Date = "Date",
+
+    //Composite style
     Group = "Group",
     ListSetting = "ListSetting",
     ConditionalBool = "ConditionalBool",
@@ -71,6 +76,16 @@ export interface InputSetting extends BaseSetting {
     maxLines: string | null; // If maxLines > 1, it's a multi-line input
 }
 
+// Leaf: TagInput
+/**
+ * An input text box where when entered it adds a value - similar to multi select but with no predefined options
+ */
+export interface TagInputSetting extends BaseSetting {
+    type: SettingType.TagInput;
+    value: string[];
+    maxEntries: number | null;
+}
+
 // Leaf: SelectSetting
 export interface SelectSetting extends BaseSetting {
     type: SettingType.Select;
@@ -101,10 +116,18 @@ export interface FileInputSetting extends BaseSetting {
     maxCumulativeFileSizeBytes: number;
 }
 
+// Leaf: DateSetting
+export interface DateSetting extends BaseSetting {
+    type: SettingType.Date;
+    unixTimestamp: number,
+}
+
 // Composite: GroupSetting
 export interface GroupSetting extends BaseSetting {
     type: SettingType.Group;
     children: BaseSetting[];
+    haveBorder?: boolean;
+    displayID?: boolean;//For when we want to identify questions for other questions to interact with
 }
 
 // Composite: SettingList
@@ -116,6 +139,7 @@ export interface ListSetting extends BaseSetting {
     maxAmount: number | null; // Null = no max
     minAmount: number | null; // Null = no min
     settingToAdd: BaseSetting;
+    haveBorder?: boolean;
 }
 
 // Composite: ConditionalSetting
@@ -131,6 +155,7 @@ export interface ConditionalSelectSetting extends BaseSetting {
     type: SettingType.ConditionalSelect;
     condition: SelectSetting; // The SelectSetting acts as the condition
     groups: Record<string, BaseSetting>; // A map where each key corresponds to a value in the SelectSetting, and the value is a GroupSetting
+    displayID?: boolean;
 }
 
 /**
@@ -143,8 +168,10 @@ export function recursivelyUpdateBaseSettingID(baseSetting:BaseSetting):BaseSett
         //Update Leafs
         case SettingType.Toggle:
         case SettingType.Input:
+        case SettingType.TagInput:
         case SettingType.Select:
         case SettingType.File:
+        case SettingType.Date:
         case SettingType.Error:
         case SettingType.Description:
             baseSetting.id = uuidv4();
@@ -208,6 +235,14 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 maxCharacters: json.maxCharacters,
                 maxLines: json.maxLines,
             } as InputSetting;
+        case SettingType.TagInput:
+            return {
+                ...json,
+                id: settingUUID,
+                type: SettingType.TagInput,
+                value: json.value ?? [],
+                maxEntries: json.maxEntries,
+            } as TagInputSetting;
 
         case SettingType.Select:
             return {
@@ -229,6 +264,13 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 allowMultipleFiles: json.allowMultipleFiles,
                 maxCumulativeFileSizeBytes: json.maxCumulativeFileSizeBytes,
             } as FileInputSetting;
+        case SettingType.Date:
+            return {
+                ...json,
+                id: settingUUID,
+                type: SettingType.Date,
+                unixTimestamp: json.unixTimestamp ?? Date.now(),
+            } as DateSetting;
         case SettingType.Error:
             return{
                 ...json,
@@ -250,6 +292,8 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 ...json,
                 id: settingUUID,
                 type: SettingType.Group,
+                haveBorder: json.haveBorder ?? true,
+                displayID: json.displayID ?? false,
                 children: json.children.map((child: any) => castToBaseSetting(child)),
             } as GroupSetting;
 
@@ -264,6 +308,7 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
                 maxAmount: json.maxAmount,
                 minAmount: json.minAmount,
                 settingToAdd: json.settingToAdd,
+                haveBorder: json.haveBorder ?? true,
             } as ListSetting;
 
         case SettingType.ConditionalBool:
@@ -280,6 +325,7 @@ export function castToBaseSetting(json: any, settingID?:string): BaseSetting {
             return {
                 ...json,
                 id: settingUUID,
+                displayID: json.displayID ?? false,
                 type: SettingType.ConditionalSelect,
                 condition: castToBaseSetting(json.condition) as SelectSetting,
                 groups: Object.fromEntries(
@@ -320,6 +366,11 @@ export function updateSettingData(setting:BaseSetting, newValue:any) {
             const inputSetting = setting as InputSetting;
             inputSetting.value = newValue;
             return inputSetting;
+        case SettingType.TagInput:
+            // eslint-disable-next-line no-case-declarations
+            const tagInputSetting = setting as TagInputSetting;
+            tagInputSetting.value = newValue;
+            return tagInputSetting;
         case SettingType.Select:
             // eslint-disable-next-line no-case-declarations
             const selectSetting = setting as SelectSetting;
@@ -334,6 +385,11 @@ export function updateSettingData(setting:BaseSetting, newValue:any) {
             const fileSetting = setting as FileInputSetting;
             fileSetting.files = newValue;
             return fileSetting;
+        case SettingType.Date:
+            // eslint-disable-next-line no-case-declarations
+            const dateSetting = setting as DateSetting;
+            dateSetting.unixTimestamp = newValue;
+            return dateSetting;
         case SettingType.Group:
             // eslint-disable-next-line no-case-declarations
             //Throw error as we cant update this
@@ -404,6 +460,7 @@ export function recursivelySetIDs(baseSetting: BaseSetting, idStore: IDStore): v
     switch (baseSetting.type) {
         case SettingType.Toggle:
         case SettingType.Input:
+        case SettingType.TagInput:
         case SettingType.Select:
         case SettingType.File:
         case SettingType.Description:
@@ -449,8 +506,10 @@ export function recursivelyGetIDs(baseSetting:BaseSetting):IDStore {
     switch(baseSetting.type) {
         case SettingType.Toggle:
         case SettingType.Input:
+        case SettingType.TagInput:
         case SettingType.Select:
         case SettingType.File:
+        case SettingType.Date:
         case SettingType.Description:
         case SettingType.Error:
             return {children: [], id: baseSetting.id};

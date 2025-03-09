@@ -17,31 +17,36 @@ import {StudentQuestionAttempt as Question} from "~/components/MEETypes/studentA
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@radix-ui/react-tooltip";
 import React, {Component} from "react";
 
-export function FlagManager({isFlagged, setFlagged}:{ isFlagged:boolean, setFlagged:(flag: boolean) => void}) {
+export function FlagManager({isFlagged, setFlagged, inSideBar = false}:{ isFlagged:boolean, setFlagged:(flag: boolean) => void, inSideBar?: boolean}) {
     const [isHovering, setIsHovering] = React.useState(false);
 
     const flagCSS = "absolute right-4";
 
-    return (isFlagged && <TooltipProvider delayDuration={0}>
+    return ((!inSideBar || isFlagged) && <TooltipProvider delayDuration={0}>
         <Tooltip>
             <TooltipTrigger asChild onMouseOver={() => setIsHovering(true)} onMouseOut={() => setIsHovering(false)} onClick={()=> setFlagged(!isFlagged)}>
-                {isHovering ? <FlagOff className={flagCSS} /> : <Flag className={flagCSS}/>}
+                {isHovering ?
+                    (isFlagged ? <FlagOff className={flagCSS} /> :  <Flag className={flagCSS} fill={"#fafafa"}/>)
+
+                    :
+
+                    (isFlagged ? <Flag className={flagCSS} fill={"#fafafa"}/> : <Flag className={flagCSS}/>)}
             </TooltipTrigger>
             <TooltipContent>
-                <p>Unflag</p>
+                <p>{isFlagged ? "UnFlag": "Flag"}</p>
             </TooltipContent>
         </Tooltip>
     </TooltipProvider>);
 }
 
-export function AppSidebar({questions, currentQuestion, setCurrentQuestion, setFlagged}: {questions: Question[], currentQuestion: Question, setCurrentQuestion: (question: Question) => void, setFlagged: (question: Question, flag:boolean) => void} ){
+export function AppSidebar({leaveQuizFN, questions, currentQuestion, setCurrentQuestion, setFlagged, submitQuizFN}: {leaveQuizFN:()=>void, questions: Question[], currentQuestion: Question, setCurrentQuestion: (question: Question) => void, setFlagged: (question: Question, flag:boolean) => void, submitQuizFN:()=>void} ){
     return (
         <Sidebar className="h-screen">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem key={"LeaveQuiz"}>
                         <SidebarMenuButton asChild>
-                            <a href={"#"}>
+                            <a onClick={leaveQuizFN}>
                                 <LogOut className="rotate-180" />
                                 <span>Leave Quiz</span>
                             </a>
@@ -71,7 +76,7 @@ export function AppSidebar({questions, currentQuestion, setCurrentQuestion, setF
                                                         <Button variant="secondary"
                                                                 className={`text-3xl font-semibold ${(currentQuestion.studentQuestionAttemptUUID === question.studentQuestionAttemptUUID ? "underline" : "")}`}
                                                                 onClick={() => setCurrentQuestion(question)}>{index + 1}</Button>
-                                                        <FlagManager isFlagged={question.flagged} setFlagged={(flag:boolean) => setFlagged(question, flag)}/>
+                                                        <FlagManager isFlagged={question.flagged} setFlagged={(flag:boolean) => setFlagged(question, flag)} inSideBar={true}/>
 
                                                     </CardContent>
                                                 </Card>
@@ -79,8 +84,6 @@ export function AppSidebar({questions, currentQuestion, setCurrentQuestion, setF
                                         </CarouselItem>
                                     ))}
                                 </CarouselContent>
-                                {/*<CarouselPrevious />*/}
-                                {/*<CarouselNext />*/}
                             </Carousel>
 
                         </SidebarMenu>
@@ -91,9 +94,9 @@ export function AppSidebar({questions, currentQuestion, setCurrentQuestion, setF
                 <SidebarMenu>
                     <SidebarMenuItem key={"ReviewQuiz"}>
                         <SidebarMenuButton asChild>
-                            <a href={"#"}>
+                            <a onClick={submitQuizFN}>
                                 <BookOpen />
-                                <span>Review Quiz</span>
+                                <span>Submit Quiz</span>
                             </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

@@ -15,6 +15,7 @@ import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from "remix-themes"
 
 import { themeSessionResolver } from "./session.server";
 import { useLoaderData } from "@remix-run/react";
+import {Toaster} from "~/components/ui/sonner";
 
 // Return the theme from the session storage using the loader
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -58,6 +59,7 @@ export function App({ children }: { children: React.ReactNode }) {
         <Outlet />
         <ScrollRestoration />
         <Scripts />
+        <Toaster />
       </body>
     </html>
   );

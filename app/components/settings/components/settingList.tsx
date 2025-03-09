@@ -6,7 +6,7 @@ import {
 } from "~/components/settings/compositeSettings";
 
 import React, {useEffect, useState} from "react";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 import {Button} from "~/components/ui/button";
 import {Plus} from "lucide-react";
 import {SettingTooltip} from "~/components/settings/components/settingTooltip";
@@ -36,7 +36,7 @@ export function SettingList({
                                  setValue,
                        }: {
     listSetting: ListSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
     register: any,
     setValue: any,
 }): JSX.Element {
@@ -76,7 +76,7 @@ export function SettingList({
             name={listSetting.id} // Use the id as the name
             defaultValue={operationsPerformed} // Set the default value
             render={({field}) => (
-        <fieldset key={listSetting.id} className="space-x-3 space-y-0 rounded-md border p-4">
+        <fieldset key={listSetting.id} className={listSetting.haveBorder ? "space-x-3 space-y-0 rounded-md border p-4": ""}>
             <GroupTitle label={listSetting.label} tooltip={listSetting.tooltip} />
 
             <div className="flex flex-wrap gap-3" key={listSetting.id}> {/* Use flexbox with gap for consistent spacing */}

@@ -9,7 +9,7 @@ import {SettingTooltip} from "~/components/settings/components/settingTooltip";
 import {Switch} from "~/components/ui/switch";
 import {Controller} from "react-hook-form";
 import React, {useEffect, useState} from "react";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 import {GroupTitle} from "~/components/settings/components/settingGroup";
 import {Toggle} from "~/components/settings/components/toggle";
 import {SelectSettingComponent} from "~/components/settings/components/selectSettingComponent";
@@ -21,7 +21,7 @@ export function SettingConditionalSelect({
                                            setValue,
                                        }: {
     conditionalSelect: ConditionalSelectSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
     register: any,
     setValue: any,
 }): JSX.Element {
@@ -34,7 +34,7 @@ export function SettingConditionalSelect({
 
     return (
         <fieldset key={conditionalSelect.id} className="space-x-3 space-y-0 rounded-md border p-4">
-            <GroupTitle label={conditionalSelect.label} tooltip={conditionalSelect.tooltip}/>
+            <GroupTitle label={conditionalSelect.label} tooltip={conditionalSelect.tooltip}  id={(conditionalSelect.displayID != undefined && conditionalSelect.displayID) ? conditionalSelect.id : undefined}/>
             {/*{renderSetting(conditionalSetting.condition, control, register, setValue)}*/}
             <SelectSettingComponent selectSetting={conditionalSelect.condition} control={control} updateValue={(selected: string[]) => {
                 setSelectSettings((prevState) => ({

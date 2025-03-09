@@ -9,7 +9,7 @@ import {
     ListSetting,
     SelectSetting,
     SettingType,
-    ToggleSetting, DescriptionSetting, ErrorSetting
+    ToggleSetting, DescriptionSetting, ErrorSetting, TagInputSetting, DateSetting
 } from "~/components/settings/compositeSettings";
 import {Input} from "~/components/ui/input";
 import {Toggle} from "~/components/settings/components/toggle";
@@ -20,7 +20,10 @@ import {SettingGroup} from "~/components/settings/components/settingGroup";
 import {SettingList} from "~/components/settings/components/settingList";
 import {SettingConditionalBool} from "~/components/settings/components/settingConditionalBool";
 import {SettingConditionalSelect} from "~/components/settings/components/settingConditionalSelect";
-import {createSettingTitle} from "~/components/settings/greenMan/DynamicForm";
+import {createSettingTitle} from "~/components/settings/DynamicForm";
+import {SettingTagInput} from "~/components/settings/components/settingTagInput";
+import {Textarea} from "~/components/ui/textarea";
+import {SettingDate} from "~/components/settings/components/settingDate";
 
 const renderSetting = (
     setting: BaseSetting,
@@ -40,20 +43,61 @@ const renderSetting = (
             );
 
         case SettingType.Input:
+            // eslint-disable-next-line no-case-declarations
+            const inputSetting = setting as InputSetting;
+
+            // eslint-disable-next-line no-case-declarations
+            const maxRows = calculateTextAreaMaxRows(inputSetting.maxLines);
             return (
                 <div key={setting.id}>
                     <label className="block">{setting.label}</label>
                     <div className="inline-flex align-middle items-center">
-                    <Input
-                        {...register(setting.id)}
-                        defaultValue={(setting as InputSetting).value}
-                        disabled={setting.disabled}
-                        maxLength={(setting as InputSetting).maxCharacters || undefined}
-                        placeholder={setting.tooltip}
-                    />
+                        {
+                            inputSetting.maxLines === "1"
+                            ?
+                                <Input
+                                    {...register(setting.id)}
+                                    defaultValue={inputSetting.value}
+                                    disabled={setting.disabled}
+                                    maxLength={inputSetting.maxCharacters || undefined}
+                                    placeholder={setting.tooltip}
+                                    // multiple={true}
+                                    // max={3}
+                                    // onSubmit={(event)=> event.preventDefault()}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter") {
+                                            event.preventDefault(); // Prevent form submission
+                                        }}}
+                                />
+                                :
+                                <Textarea
+                                    {...register(setting.id)}
+                                    defaultValue={inputSetting.value}
+                                          disabled={setting.disabled}
+                                          maxLength={inputSetting.maxCharacters || undefined}
+                                          placeholder={setting.tooltip ?? undefined}
+                                          onKeyDown={(event) => {
+                                              const currentLines = event.currentTarget.value.split("\n").length;
+
+                                              if (event.key === "Enter" && maxRows && currentLines >= maxRows) {
+                                                  event.preventDefault();
+                                                  console.warn(`Max lines reached: ${maxRows}`);
+                                              }
+                                          }
+                                          }
+                                />
+
+                        }
+
                         {setting.tooltip && <SettingTooltip tooltip={setting.tooltip}/>}
                     </div>
                 </div>
+            );
+        case SettingType.TagInput:
+            // eslint-disable-next-line no-case-declarations
+            const tagInputSetting = setting as TagInputSetting;
+            return (
+                <SettingTagInput tagInputSetting={tagInputSetting} control={control} key={setting.id}/>
             );
 
         case SettingType.Select:
@@ -69,7 +113,12 @@ const renderSetting = (
             return (
                     <FileUploaderSetting fileSetting={fileSetting} control={control} key={setting.id}/>
             );
-
+        case SettingType.Date:
+            // eslint-disable-next-line no-case-declarations
+            const dateSetting = setting as DateSetting;
+            return(
+                    <SettingDate dateSetting={dateSetting} control={control} key={setting.id}/>
+            );
         case SettingType.Group:
             // eslint-disable-next-line no-case-declarations
             const groupSetting = setting as GroupSetting;
@@ -121,5 +170,18 @@ const renderSetting = (
             return null;
     }
 };
+
+function calculateTextAreaMaxRows(maxLines:string | null): number | undefined {
+        if(maxLines == null){
+            return undefined;
+        }
+        //Convert to number
+        const maxLinesNumber = Number(maxLines); // Convert string to number
+        if (isNaN(maxLinesNumber)) {
+            console.error(`Invalid maxLines value: "${maxLines}". Expected a number.`);
+            return undefined;
+        }
+        return maxLinesNumber;
+}
 
 export {renderSetting};

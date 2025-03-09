@@ -1,6 +1,6 @@
 import {ConditionalBoolSetting, ToggleSetting} from "~/components/settings/compositeSettings";
 import React, {useEffect, useState} from "react";
-import {renderSetting} from "~/components/settings/greenMan/renderSetting";
+import {renderSetting} from "~/components/settings/renderSetting";
 import {GroupTitle} from "~/components/settings/components/settingGroup";
 import {Toggle} from "~/components/settings/components/toggle";
 
@@ -11,7 +11,7 @@ export function SettingConditionalBool({
                                        setValue,
                        }: {
     conditionalSetting: ConditionalBoolSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
     register: any,
     setValue: any,
 }): JSX.Element {

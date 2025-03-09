@@ -25,7 +25,7 @@ export function SelectSettingComponent(
         updateValue,
     }:{
         selectSetting:SelectSetting
-        control: any; // Update with the correct type from your form library
+        control: any;
         updateValue?: (value:string[]) => void;
 }) {
     return(
@@ -50,7 +50,7 @@ export function SelectSettingComponent(
                                     }
                                 }}>
 
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger className="w-[400px]">
                                     <SelectValue placeholder={selectSetting.tooltip}/>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -81,7 +81,7 @@ export function SelectSettingComponent(
                                 }
                             }}
                             loop
-                            className="max-w-xs"
+                            className="w-[400px]"
                         >
                             <MultiSelectorTrigger>
                                 <MultiSelectorInput placeholder={selectSetting.tooltip == null ? undefined : selectSetting.tooltip} />

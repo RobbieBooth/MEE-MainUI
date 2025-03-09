@@ -11,12 +11,12 @@ export function Toggle({
     updateValue,
                        }: {
     toggleSetting: ToggleSetting;
-    control: any; // Update with the correct type from your form library
+    control: any;
     updateValue?: (value:boolean) => void;
 }): JSX.Element {
     return (
-        <div className="grid grid-cols-12 gap-4 w-full">
-            <div className="col-span-4">
+        <div className="grid gap-4 w-full">
+            <div className="">
                 {/* Use Controller for logic */}
                 <Controller
                     control={control}

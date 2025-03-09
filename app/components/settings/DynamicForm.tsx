@@ -16,6 +16,15 @@ import {
 } from "~/components/settings/compositeSettings";
 import {Separator} from "~/components/ui/separator"; // Import the utility function
 import {v4 as uuidv4} from "uuid";
+import {OAuthUser} from "~/auth.server";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator
+} from "~/components/ui/breadcrumb";
+import {LogOut} from "lucide-react";
 
 type ModuleName = string;
 type UUID = string;
@@ -31,7 +40,7 @@ interface QuizSettings {
     quizSetting: BaseSetting;
     defaultModuleSettings: Record<ModuleName, BaseSetting>;
     questions: Record<UUID, Tuple>; // Using tuple to represent Pair
-    newQuestions: Tuple[]; // Array of tuples
+    newQuestions: Record<UUID, Tuple>; //
 }
 
 function createQuizSettings(json:any):QuizSettings {
@@ -53,18 +62,27 @@ function createQuizSettings(json:any):QuizSettings {
                 }
             )
         ),
-        newQuestions: (json.newQuestions || []).map(
-            (item: any) => {
-                const tuple = item as Tuple; // Explicitly cast value
-                tuple.second = castToBaseSetting(tuple.second);
-                return tuple;
-            }
-        )
+        newQuestions: Object.fromEntries(
+            Object.entries(json.newQuestions || {}).map(
+                ([key, value]) => {
+                    const tuple = value as Tuple; // Explicitly cast value
+                    tuple.second = castToBaseSetting(tuple.second);
+                    return [key as UUID, tuple];//We don't pass the key here since the key will be used on the group holding the setting, since if the setting type changes we want setting to change completely.
+                }
+            )
+        ),
+        // newQuestions: (json.newQuestions || []).map(
+        //     (item: any) => {
+        //         const tuple = item as Tuple; // Explicitly cast value
+        //         tuple.second = castToBaseSetting(tuple.second);
+        //         return tuple;
+        //     }
+        // )
     }
 
 }
 
-export const DynamicForm = ({ settings }: { settings: string | null}) => {
+export const DynamicForm = ({ settings, classUUID, user }: { settings: string | null, classUUID:string, user:OAuthUser}) => {
     const [baseSettings, setBaseSettings] = useState<BaseSetting[]>([]);
     const [quizSetting, setQuizSetting] = useState<BaseSetting[]>([]);
     const [questionSetting, setQuestionSetting] = useState<BaseSetting[]>([]);
@@ -76,10 +94,11 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
 
     const fetchSettingsByQuizId = async (QuizID:string|null) => {
         try {
-            const response = await fetch(`http://localhost:8080/v1/api/setting/${QuizID ?? ""}`, {
+            const response = await fetch(`http://localhost:8080/v1/api/class/${classUUID}/quiz/setting/${QuizID ?? ""}`, {
                 method: "GET", // or 'POST', 'PUT', 'DELETE', etc.
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${user.backendJWT}`
                 },
             });
 
@@ -97,7 +116,7 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             //Change the page url to having the new quizUUID without causing a rerender and getting the setting again.
             //This will cut request time by half theoretically.
             //This also allows us, once the quiz has been saved, to reload and get the quiz we were editing instead of a completely new one.
-            window.history.replaceState(null, "Settings Page", `/setting/${data.quizUUID}`);
+            window.history.replaceState(null, "Settings Page", `/class/${classUUID}/quiz/setting/${data.quizUUID}`);
         } catch (error) {
             setError(error instanceof Error ? error.message : "An unknown error occurred");
             setQuizSettingsHolder(undefined); // Clear previous student data
@@ -105,34 +124,14 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
         setLoading(false);
     };
 
-    // //TODO Temporary REMOVE AFTER DEMO
-    // const saveQuizToStudent = async (quizSettings: QuizSettings) => {
-    //     const studentUUID = "04474476-0204-4761-a110-495543d1e7a7";
-    //     const quizUUID = quizSettings.quizUUID;
-    //     try {
-    //         const response = await fetch(`http://localhost:8080/v1/api/student/${studentUUID}/addQuiz/${quizUUID}`, {
-    //             method: "PATCH",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //             },
-    //         });
-    //
-    //         if (!response.ok) {
-    //             throw new Error(`HTTP error! status: ${response.status}`);
-    //         }
-    //
-    //     } catch (error) {
-    //         setError(error instanceof Error ? error.message : "An unknown error occurred");
-    //     }
-    // };
-
     const saveQuizSettings = async (quizSettings: QuizSettings) => {
         try {
-            const response = await fetch("http://localhost:8080/v1/api/setting/save", {
+            const response = await fetch(`http://localhost:8080/v1/api/class/${classUUID}/quiz/setting/save`, {
                 method: "POST",
                 body: JSON.stringify(quizSettings),
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${user.backendJWT}`
                 },
             });
 
@@ -148,8 +147,6 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             setError(error instanceof Error ? error.message : "An unknown error occurred");
             setQuizSettingsHolder(undefined); // Clear previous student data
         }
-
-        // await saveQuizToStudent(quizSettings);//TODO remove!!! after demo
     };
 
     const createQuestionSetting = (quizSettings:QuizSettings):BaseSetting =>{
@@ -159,6 +156,7 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             id: uuidv4(),
             label: null,
             tooltip: null,
+            displayID: true,
             type: SettingType.ConditionalSelect,
             condition: {
                 type: SettingType.Select,
@@ -267,13 +265,14 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
         });
 
 
-        const newQuestions:Tuple[] = [];
+        // const newQuestions:Tuple[] = [];
+        const newQuestions:Record<UUID, Tuple> = {}
         const previousQuestions:Record<UUID, Tuple> = {}
         Object.entries(questionList).forEach(([key, value]) => {
             if(quizSettingsHolder.questions[key]){
                 previousQuestions[key] = {first:value[0], second:value[1]};
             }else{
-                newQuestions.push({first:value[0], second:value[1]});
+                newQuestions[key] = {first:value[0], second:value[1]};
             }
         });
         const newQuizSettingHolder:QuizSettings = {
@@ -299,14 +298,92 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
     }, [settings]);
 
 
-    /**
-     * Recursively updates all of the settings. It also removes the error setting
-     * @param ids
-     * @param settings
-     */
-    const updateSettingRecursively = (ids: { [key: string]: any }, settings:BaseSetting[])=> {
-        return settings.filter(setting => setting.type !== SettingType.Error)//Remove the error ones then do all updates
-            .map((setting) =>{
+
+
+    if(loading){
+        return null;
+    }
+
+    if(error){
+        return (
+            <div className="space-y-8 max-w-3xl mx-auto py-10 min-h-screen">
+                {createSettingTitle("An Error Occurred", error)}
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            {/*Temporary until we have solution to make the breadcrumbs dynamically*/}
+            <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4">
+                <a href={`/class/${classUUID}`} className="inline-flex space-x-2">
+                    <LogOut className="rotate-180"/>
+                </a>
+                <Separator orientation="vertical" className="mr-2 h-4"/>
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink href="/class/">
+                                My Classes
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block"/>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink href={`/class/${classUUID}`}>
+                                Class
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block"/>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink href={`/class/${classUUID}/quiz/`}>
+                                Quiz
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block"/>
+                        <BreadcrumbItem>
+                            <BreadcrumbPage>Setting</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+            </header>
+            <FormProvider {...methods}>
+                <form onSubmit={onFormSubmit} className="space-y-8 max-w-3xl mx-auto py-10 min-h-screen">
+                    {createSettingTitle("Quiz Settings", "The settings for the quiz.")}
+                {quizSetting.map((baseSetting) =>
+                    renderSetting(baseSetting, control, register, setValue)
+                )}
+                <Separator className="my-4"/>
+                {createSettingTitle("Question Settings", "The settings for each individual question.")}
+                {questionSetting.map((baseSetting) =>
+                    renderSetting(baseSetting, control, register, setValue)
+                )}
+                <Button type="submit">Save</Button>
+            </form>
+        </FormProvider>
+        </div>
+)
+    ;
+};
+
+export function createSettingTitle(title?: string, description?: string) {
+    return <div className="space-y-1">
+        {title && <h3 className="text-lg font-medium leading-none">{title}</h3>}
+        {description &&
+            <p className="text-base text-muted-foreground">
+            {description}
+        </p>
+        }
+    </div>;
+}
+
+/**
+ * Recursively updates all of the settings. It also removes the error setting
+ * @param ids
+ * @param settings
+ */
+export function updateSettingRecursively (ids: { [key: string]: any }, settings:BaseSetting[]):BaseSetting[] {
+    return settings.filter(setting => setting.type !== SettingType.Error)//Remove the error ones then do all updates
+        .map((setting) =>{
             let baseSetting = setting;
             const id = baseSetting.id;
             //big o of o(1) since has table
@@ -340,75 +417,34 @@ export const DynamicForm = ({ settings }: { settings: string | null}) => {
             }
             return baseSetting;
         })
-    };
-
-    const updateBoolConditionalData = (ids: { [key: string]: any }, setting:ConditionalBoolSetting)=> {
-        const newSetting = setting;
-        const toggleSetting = newSetting.condition;
-        if (toggleSetting.id in ids) {
-            const value = ids[toggleSetting.id];
-            newSetting.condition = updateSettingData(toggleSetting, value) as ToggleSetting;
-        }
-
-        // const groupSetting = setting.group as GroupSetting;
-        // groupSetting.children = updateSettingRecursively(ids, groupSetting.children);
-        newSetting.children = updateSettingRecursively(ids, [setting.children])[0];
-        return newSetting;
-    }
-
-    const updateSelectConditionalData = (ids: { [p: string]: any }, conditionalSelect: ConditionalSelectSetting) => {
-        const newSetting = conditionalSelect;
-        const select = newSetting.condition;
-        if (select.id in ids) {
-            const value = ids[select.id];
-            newSetting.condition = updateSettingData(select, value) as SelectSetting;
-        }
-
-        Object.entries(newSetting.groups).forEach(([key, group]) => {
-            //It will recursively go through children by going per group
-            newSetting.groups[key] = updateSettingRecursively(ids, [group])[0];
-        });
-
-        return newSetting;
-    };
-
-    if(loading){
-        return null;
-    }
-
-    if(error){
-        return (
-            <div className="space-y-8 max-w-3xl mx-auto py-10 min-h-screen">
-                {createSettingTitle("An Error Occurred", error)}
-            </div>
-        );
-    }
-
-    return (
-        <FormProvider {...methods}>
-            <form onSubmit={onFormSubmit} className="space-y-8 max-w-3xl mx-auto py-10 min-h-screen">
-                {createSettingTitle("Quiz Settings", "The settings for the quiz.")}
-                {quizSetting.map((baseSetting) =>
-                    renderSetting(baseSetting, control, register, setValue)
-                )}
-                <Separator className="my-4"/>
-                {createSettingTitle("Question Settings", "The settings for each individual question.")}
-                {questionSetting.map((baseSetting) =>
-                    renderSetting(baseSetting, control, register, setValue)
-                )}
-                <Button type="submit">Submit</Button>
-            </form>
-        </FormProvider>
-    );
-};
-
-export function createSettingTitle(title?:string, description?:string) {
-    return <div className="space-y-1">
-        {title && <h3 className="text-lg font-medium leading-none">{title}</h3>}
-        {description &&
-            <p className="text-base text-muted-foreground">
-            {description}
-        </p>
-        }
-    </div>;
 }
+
+const updateBoolConditionalData = (ids: { [key: string]: any }, setting:ConditionalBoolSetting)=> {
+    const newSetting = setting;
+    const toggleSetting = newSetting.condition;
+    if (toggleSetting.id in ids) {
+        const value = ids[toggleSetting.id];
+        newSetting.condition = updateSettingData(toggleSetting, value) as ToggleSetting;
+    }
+
+    // const groupSetting = setting.group as GroupSetting;
+    // groupSetting.children = updateSettingRecursively(ids, groupSetting.children);
+    newSetting.children = updateSettingRecursively(ids, [setting.children])[0];
+    return newSetting;
+}
+
+const updateSelectConditionalData = (ids: { [p: string]: any }, conditionalSelect: ConditionalSelectSetting) => {
+    const newSetting = conditionalSelect;
+    const select = newSetting.condition;
+    if (select.id in ids) {
+        const value = ids[select.id];
+        newSetting.condition = updateSettingData(select, value) as SelectSetting;
+    }
+
+    Object.entries(newSetting.groups).forEach(([key, group]) => {
+        //It will recursively go through children by going per group
+        newSetting.groups[key] = updateSettingRecursively(ids, [group])[0];
+    });
+
+    return newSetting;
+};
