@@ -583,7 +583,7 @@ export function AvailableQuizForm(
             </DialogTrigger>
             <DialogContent className="min-w-fit">
                 <DialogHeader>
-                    <DialogTitle>{createOrEdit} Class</DialogTitle>
+                    <DialogTitle>{createOrEdit} Available Quiz</DialogTitle>
                     <DialogDescription>
                         {createOrEdit} a quiz which is available to students to complete
                     </DialogDescription>
