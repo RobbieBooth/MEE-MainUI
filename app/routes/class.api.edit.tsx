@@ -18,10 +18,10 @@ export const action = async ({ request }: { request: Request }) => {
         const studentUUIDs = students.map((user) => user._id);
 
         // 5. Send the request to the Spring server
-        await sendClassToSpring(id, className, classDescription, educatorUUIDs, studentUUIDs, user.backendJWT!);
+        const updatedClassResponse = await sendClassToSpring(id, className, classDescription, educatorUUIDs, studentUUIDs, user.backendJWT!);
 
         return new Response(
-            JSON.stringify({ success: true }),
+            await updatedClassResponse.body,
             {
                 status: 200,
                 headers: { "Content-Type": "application/json" }

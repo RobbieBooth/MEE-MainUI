@@ -12,11 +12,11 @@ import NoItemsFound from "~/components/tables/noItemsFound";
 export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
     const navigate = useNavigate();
     const [userMaps, setUserMaps] = useState<Map<string, UserMap>>(new Map());
+    const [classesHolder, setClassesHolder] = useState<Class[]>(classes);
 
-    const handleGoToClass = (uuid:string) => {
-        navigate(`/class/${uuid}`);
-    };
-
+    useEffect(() => {
+        setClassesHolder(classes);
+    }, [classes]);
 
     useEffect(() => {
         const fetchUserMaps = async () => {
@@ -28,7 +28,28 @@ export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
             setUserMaps(newUserMaps);
         };
         fetchUserMaps();
-    }, [classes]);
+    }, [classesHolder]);
+
+    const updateClassHolder = (updatedClass:Class)=> {
+        let newClasses = [...classesHolder];
+        let containsClass = false;
+        newClasses = newClasses.map((value) =>{
+            if(updatedClass.id === value.id){
+                containsClass = true;
+                return updatedClass;
+            }else{
+                return value;
+            }
+        });
+        if(!containsClass){
+            newClasses.push(updatedClass);
+        }
+        setClassesHolder(newClasses);
+    }
+
+    const handleGoToClass = (uuid:string) => {
+        navigate(`/class/${uuid}`);
+    };
 
     return (
         <Table>
@@ -44,7 +65,7 @@ export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {classes.map((selectedClass) => {
+                {classesHolder.map((selectedClass) => {
                     const userID = user.associatedDBUser!._id;
                     const userEmail = user.email;
 
@@ -65,7 +86,7 @@ export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
                                                className: selectedClass.className,
                                                classEducatorEmails: selectedClass.educators.map(uuid => userMap.get(uuid)?.email ?? "UNKNOWN"),
                                                classStudentEmails: selectedClass.students.map(uuid => userMap.get(uuid)?.email ?? "UNKNOWN")}}
-                                           createOrEdit={"Edit"}/>}
+                                           createOrEdit={"Edit"} updateOrEditClass={updateClassHolder}/>}
                             </TableCell>
                             {/*<TableCell><Button onClick={()=>handleGoToQuiz(uuid)}>{buttonTitle}</Button></TableCell>*/}
                         </TableRow>

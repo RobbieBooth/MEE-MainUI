@@ -16,6 +16,7 @@ import {
 } from "~/components/ui/dialog";
 import { toast } from "sonner";
 import {CreateOrEdit} from "~/components/availableQuiz/creation/availableQuizForm";
+import {Class} from "~/routes/class.$classUUID._index";
 
 
 const className:InputSetting = {
@@ -81,11 +82,13 @@ export function ClassForm(
     {
         userEmail,
         classFormFields,
-        createOrEdit
+        createOrEdit,
+        updateOrEditClass,
     }:{
         userEmail:string,
         classFormFields: classFormFields,
-        createOrEdit: CreateOrEdit
+        createOrEdit: CreateOrEdit,
+        updateOrEditClass: (updatedClass:Class)=>void,
     }
 ) {
     const [baseSettings, setBaseSettings] = useState<BaseSetting[]>(defaultClassForm);
@@ -154,7 +157,8 @@ export function ClassForm(
                 throw new Error(`API Error: ${response.status}`);
             }
 
-            const result = await response.json();
+            const result:Class = await response.json();
+            updateOrEditClass(result);
             console.log("Class created/updated successfully:", result);
             toast.success("Class Successfully created/updated");
             setOpen(false);//close dialog
