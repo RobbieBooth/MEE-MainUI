@@ -49,9 +49,9 @@ const renderSetting = (
             // eslint-disable-next-line no-case-declarations
             const maxRows = calculateTextAreaMaxRows(inputSetting.maxLines);
             return (
-                <div key={setting.id}>
+                <div key={setting.id} className="w-full">
                     <label className="block">{setting.label}</label>
-                    <div className="inline-flex align-middle items-center">
+                    <div className="inline-flex align-middle items-center w-full">
                         {
                             inputSetting.maxLines === "1"
                             ?
