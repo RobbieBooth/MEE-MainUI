@@ -179,7 +179,7 @@ export function ClassForm(
     return (
         <Dialog open={open} onOpenChange={openChange}>
             <DialogTrigger asChild>
-                <Button variant="outline">{createOrEdit} Class</Button>
+                <Button variant={createOrEdit === "Create" ? "default" : "outline"}>{createOrEdit} Class</Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

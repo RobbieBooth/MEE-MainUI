@@ -3,7 +3,7 @@ import {authenticate, OAuthUser} from "~/auth.server";
 import {useLoaderData} from "@remix-run/react";
 import {sidebarItem} from "~/components/dashboard/appSidebar";
 import {BookOpen, Bot, Settings2, SquareTerminal} from "lucide-react";
-import {getClassesFromBackend, MySidebar} from "~/routes/dashboard";
+import {getClassesFromBackend, MySidebar, triggerSidebarRefresh} from "~/routes/dashboard";
 import {Button} from "~/components/ui/button";
 import {
     Dialog,
@@ -16,7 +16,7 @@ import {
 import {Label} from "~/components/ui/label";
 import {Input} from "~/components/ui/input";
 import {ClassForm} from "~/components/classes/creation/classCreation";
-import {ClassTable} from "~/components/classes/classTable";
+import {ClassTable, updateClassHolder} from "~/components/classes/classTable";
 import {Class} from "~/routes/class.$classUUID._index";
 import {useEffect, useState} from "react";
 
@@ -32,33 +32,21 @@ export const loader: LoaderFunction = async ({ request }):Promise<{user:OAuthUse
 export default function Dashboard() {
     const { user, classes } = useLoaderData<typeof loader>() as {user: OAuthUser, classes: Class[]};
     const [classesHolder, setClassesHolder] = useState<Class[]>(classes);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         setClassesHolder(classes);
     }, [classes]);
 
-    const updateClassHolder = (updatedClass:Class)=> {
-        let newClasses = [...classesHolder];
-        let containsClass = false;
-        newClasses = newClasses.map((value) =>{
-            if(updatedClass.id === value.id){
-                containsClass = true;
-                return updatedClass;
-            }else{
-                return value;
-            }
-        });
-        if(!containsClass){
-            newClasses.push(updatedClass);
-        }
-        setClassesHolder(newClasses);
-    }
 
     return (
-        <MySidebar user={user}>
+        <MySidebar user={user} refreshKey={refreshKey}>
             <div className="p-2">
-                <ClassForm userEmail={user.email!} classFormFields={{className:"", classDescription: "", classEducatorEmails: [], classStudentEmails:[]}} createOrEdit={"Create"} updateOrEditClass={updateClassHolder}/>
-                <ClassTable classes={classesHolder} user={user}/>
+                <ClassForm userEmail={user.email!} classFormFields={{className:"", classDescription: "", classEducatorEmails: [], classStudentEmails:[]}} createOrEdit={"Create"} updateOrEditClass={updatedClass => {
+                    updateClassHolder(classesHolder, updatedClass, setClassesHolder);
+                    triggerSidebarRefresh(setRefreshKey);
+                }}/>
+                <ClassTable classes={classesHolder} user={user} triggerRefresh={() => triggerSidebarRefresh(setRefreshKey)}/>
             </div>
         </MySidebar>
     )

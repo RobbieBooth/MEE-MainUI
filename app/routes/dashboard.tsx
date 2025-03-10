@@ -22,9 +22,10 @@ import {BookOpen, Bot, Settings2, SquareTerminal, GraduationCap, LayoutDashboard
 import {ReactNode, useEffect, useState} from "react";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "~/components/ui/resizable";
 import {Class, getClassFromBackend} from "~/routes/class.$classUUID._index";
-import {ClassTable} from "~/components/classes/classTable";
+import {ClassTable, updateClassHolder} from "~/components/classes/classTable";
 import {Button} from "~/components/ui/button";
 import {useNavigate} from "react-router";
+import {ClassForm} from "~/components/classes/creation/classCreation";
 
 export async function getClassesFromBackend(user: OAuthUser) {
     const response = await fetch("http://localhost:8080/v1/api/class/", {
@@ -58,8 +59,15 @@ export default function Dashboard() {
     const { user, classes } = useLoaderData<typeof loader>() as {user: OAuthUser, classes: Class[]};
     const navigator = useNavigate();
 
+    const [classesHolder, setClassesHolder] = useState<Class[]>(classes);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    useEffect(() => {
+        setClassesHolder(classes);
+    }, [classes]);
+
     return (
-        <MySidebar user={user}>
+        <MySidebar user={user} refreshKey={refreshKey}>
             <ResizablePanelGroup
                 direction="vertical"
                 className="h-screen w-full rounded-lg border"
@@ -83,8 +91,19 @@ export default function Dashboard() {
                 </ResizablePanel>
                 <ResizableHandle />
                 <ResizablePanel defaultSize={50}>
-                    <div className="flex h-full items-center justify-center p-6">
-                        <ClassTable user={user} classes={classes}/>
+                    <div className="pt-4 pl-4">
+
+                    </div>
+                    <div className="flex h-full w-full items-center justify-center p-6">
+                        <div className="block w-full h-full">
+                            <div className="pb-4">
+                                <ClassForm userEmail={user.email!} classFormFields={{className:"", classDescription: "", classEducatorEmails: [], classStudentEmails:[]}} createOrEdit={"Create"} updateOrEditClass={updatedClass => {
+                                    updateClassHolder(classesHolder, updatedClass, setClassesHolder);
+                                    triggerSidebarRefresh(setRefreshKey);
+                                }}/>
+                            </div>
+                            <ClassTable user={user} classes={classesHolder} triggerRefresh={() => triggerSidebarRefresh(setRefreshKey)}/>
+                        </div>
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
@@ -112,12 +131,13 @@ type SidebarProps = {
     children: ReactNode;
     user: OAuthUser; // Replace with proper user type
     currentClassID?: string; //Optional string to open the classes properties if it's the current class
+    refreshKey?: number;//Used to refresh the side bar if class is added or updated etc - however is not required unless you are wanting to refresh the sidebar
     // sidebarItems: sidebarItem[]; // Replace with proper sidebar items type
 };
 
 
 
-export function MySidebar({ children, user, currentClassID }:SidebarProps) {
+export function MySidebar({ children, user, currentClassID, refreshKey}:SidebarProps) {
     const [userData, setUserData] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -147,7 +167,7 @@ export function MySidebar({ children, user, currentClassID }:SidebarProps) {
         };
 
         fetchUser();
-    }, [user.associatedDBUser]);
+    }, [user.associatedDBUser, refreshKey]);
 
     useEffect(() => {
         if(userData == null){
@@ -221,3 +241,7 @@ export function MySidebar({ children, user, currentClassID }:SidebarProps) {
         </SidebarProvider>
     );
 }
+
+export const triggerSidebarRefresh = (setRefreshKey: (value: React.SetStateAction<number>) => void) => {
+    setRefreshKey((prev) => prev + 1);
+};

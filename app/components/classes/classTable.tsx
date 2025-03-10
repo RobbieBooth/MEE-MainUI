@@ -9,7 +9,7 @@ import {AttemptsDialog} from "~/components/quizSection/studentAttemptsPage";
 import {ClassForm} from "~/components/classes/creation/classCreation";
 import NoItemsFound from "~/components/tables/noItemsFound";
 
-export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
+export function ClassTable({user, classes, triggerRefresh}:{ user:OAuthUser, classes:Class[], triggerRefresh: ()=>void}) {
     const navigate = useNavigate();
     const [userMaps, setUserMaps] = useState<Map<string, UserMap>>(new Map());
     const [classesHolder, setClassesHolder] = useState<Class[]>(classes);
@@ -29,23 +29,6 @@ export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
         };
         fetchUserMaps();
     }, [classesHolder]);
-
-    const updateClassHolder = (updatedClass:Class)=> {
-        let newClasses = [...classesHolder];
-        let containsClass = false;
-        newClasses = newClasses.map((value) =>{
-            if(updatedClass.id === value.id){
-                containsClass = true;
-                return updatedClass;
-            }else{
-                return value;
-            }
-        });
-        if(!containsClass){
-            newClasses.push(updatedClass);
-        }
-        setClassesHolder(newClasses);
-    }
 
     const handleGoToClass = (uuid:string) => {
         navigate(`/class/${uuid}`);
@@ -86,7 +69,10 @@ export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
                                                className: selectedClass.className,
                                                classEducatorEmails: selectedClass.educators.map(uuid => userMap.get(uuid)?.email ?? "UNKNOWN"),
                                                classStudentEmails: selectedClass.students.map(uuid => userMap.get(uuid)?.email ?? "UNKNOWN")}}
-                                           createOrEdit={"Edit"} updateOrEditClass={updateClassHolder}/>}
+                                           createOrEdit={"Edit"} updateOrEditClass={updatedClass => {
+                                    updateClassHolder(classesHolder, updatedClass, setClassesHolder);
+                                    triggerRefresh();
+                                }}/>}
                             </TableCell>
                             {/*<TableCell><Button onClick={()=>handleGoToQuiz(uuid)}>{buttonTitle}</Button></TableCell>*/}
                         </TableRow>
@@ -101,4 +87,21 @@ export function ClassTable({user, classes}:{ user:OAuthUser, classes:Class[]}) {
             </TableBody>
         </Table>
     )
+}
+
+export const updateClassHolder = (currentClasses: Class[], updatedClass:Class, setClassesHolder:(value: React.SetStateAction<Class[]>) => void)=> {
+    let newClasses = [...currentClasses];
+    let containsClass = false;
+    newClasses = newClasses.map((value) =>{
+        if(updatedClass.id === value.id){
+            containsClass = true;
+            return updatedClass;
+        }else{
+            return value;
+        }
+    });
+    if(!containsClass){
+        newClasses.push(updatedClass);
+    }
+    setClassesHolder(newClasses);
 }
