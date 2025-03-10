@@ -79,27 +79,31 @@ export function SettingList({
         <fieldset key={listSetting.id} className={listSetting.haveBorder ? "space-x-3 space-y-0 rounded-md border p-4": ""}>
             <GroupTitle label={listSetting.label} tooltip={listSetting.tooltip} />
 
-            <div className="flex flex-wrap gap-3" key={listSetting.id}> {/* Use flexbox with gap for consistent spacing */}
-                {allChildren.map((childSetting, index) => (
-                    <div key={childSetting.id} style={{display: "flex", alignItems: "center", gap: "10px"}}>
-                        {renderSetting(childSetting, control, register, setValue)}
-                        <button onClick={() => removeComponent(field.onChange, childSetting.id)}>Remove</button>
-                    </div>
+            <div
+                 key={listSetting.id}> {/* Use flexbox with gap for consistent spacing */}
+                <div className="flex flex-wrap gap-3">
+                    {allChildren.map((childSetting, index) => (
+                        <div key={childSetting.id} style={{display: "flex", alignItems: "center", gap: "10px"}}>
+                            {renderSetting(childSetting, control, register, setValue)}
+                            <button onClick={() => removeComponent(field.onChange, childSetting.id)}>Remove</button>
+                        </div>
 
                     ))}
-                <Button
-                    type="button"
-                    onClick={() => {
-                        addComponent(field.onChange);
+                </div>
+                    <Button
+                        type="button"
+                        onClick={() => {
+                            addComponent(field.onChange);
 
-                    }}
-                    disabled={!listSetting.allowAddition}
-                >
-                    <Plus/>
-                </Button>
-            </div>
+                        }}
+                        disabled={!listSetting.allowAddition}
+                        className="block mt-2"
+                    >
+                        <Plus/>
+                    </Button>
+                </div>
 
         </fieldset>
-            )}/>
-    );
-}
+                )}/>
+            );
+            }
