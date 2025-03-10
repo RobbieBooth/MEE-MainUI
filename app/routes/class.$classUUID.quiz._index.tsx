@@ -48,17 +48,22 @@ export default function SettingPage(){
 
     return (
         <MySidebar user={user}  currentClassID={classUUID}>
-            <Button asChild>
-                <a href={`/class/${classUUID}/quiz/setting/`}>
-                    Create Quiz
-                </a>
-            </Button>
-            {isLoadingUserDetailMap || classDataHolder == undefined ? "Loading..." :
-                <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder} createOrEdit={"Create"}/>
-            }
+            <div className="m-3">
+            <div className="flex gap-3 mb-3">
+                <Button asChild>
+                    <a href={`/class/${classUUID}/quiz/setting/`}>
+                        Create Quiz
+                    </a>
+                </Button>
+                {isLoadingUserDetailMap || classDataHolder == undefined ? "Loading..." :
+                    <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder} createOrEdit={"Create"}/>
+                }
+            </div>
+
 
             {classDataHolder == undefined ? "Loading... Class Data" :
                 <AvailableQuizTable availableQuizzes={classDataHolder.availableQuizzes} user={user} classID={classUUID} isEducator={true} userMap={userDetailMap ?? new Map<string, userDetails>()}
+                                    title={"Available Quiz Table"}
                 editQuizButton={
                     (quiz:AvailableQuiz)=>
                     <AvailableQuizForm  currentClass={classDataHolder} user={user} userMap={userDetailMap!} updateClass={setClassDataHolder} createOrEdit={"Edit"} availableQuizBeingEdited={quiz} />
@@ -79,8 +84,9 @@ export default function SettingPage(){
             }
 
             {classDataHolder == undefined ? "Loading... Class Data" :
-                <QuizTable quizzes={classDataHolder.quizzes} user={user} classID={classUUID} isEducator={true}/>
+                <QuizTable quizzes={classDataHolder.quizzes} user={user} classID={classUUID} isEducator={true} title={"Quiz Table"}/>
             }
+            </div>
         </MySidebar>
     );
 }

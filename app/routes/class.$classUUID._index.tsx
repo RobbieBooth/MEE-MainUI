@@ -266,6 +266,7 @@ export default function Dashboard() {
                                                                            availableQuizBeingEdited={quiz}/>
                                                 }
                              includeViewAttempts={true}
+                                                title={"My Available Quizzes"}
                                                 deleteAvailableQuiz={(availableQuizUUID: string) => {
                                 const success = deleteAvailableQuiz(classDataHolder.id, availableQuizUUID, user.backendJWT ?? "");
                                 success.then((value) => {

@@ -30,7 +30,7 @@ import {AttemptsDialog} from "~/components/quizSection/studentAttemptsPage";
 import { toast } from "sonner";
 import NoItemsFound from "~/components/tables/noItemsFound";
 
-export function QuizTable({classID, user, quizzes, isEducator}:{ classID:string, user:OAuthUser, quizzes:QuizInfo[], isEducator: boolean}) {
+export function QuizTable({classID, user, quizzes, isEducator, title}:{ classID:string, user:OAuthUser, quizzes:QuizInfo[], isEducator: boolean, title?:string}) {
     const [quizMap,setQuizMap] = useState<Record<string, { latest: QuizInfo; versions: QuizInfo[] }>>({});
     const navigate = useNavigate();
 
@@ -57,8 +57,15 @@ export function QuizTable({classID, user, quizzes, isEducator}:{ classID:string,
     }, [quizzes]);
 
     return (
-        <Table>
+        <div>
+            {title !== undefined && (
+                <h2 className="mt-10 border-b pb-2 text-3xl font-semibold min-w-fit">
+                    {title}
+                </h2>
+            )}
+            <Table>
             <TableHeader>
+
                 <TableRow>
                     <TableHead className="">Quiz ID</TableHead>
                     <TableHead className="">Last Version ID</TableHead>
@@ -105,6 +112,8 @@ export function QuizTable({classID, user, quizzes, isEducator}:{ classID:string,
                 </TableRow>}
             </TableBody>
         </Table>
+        </div>
+
     )
 }
 
@@ -171,7 +180,7 @@ export function QuizVersionTable({classID, quizzesVersions, isEducator}:{ classI
     )
 }
 
-export function AvailableQuizTable({userMap, classID, user, availableQuizzes, isEducator, editQuizButton, includeViewAttempts, deleteAvailableQuiz}:{ userMap: UserMap, classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean, editQuizButton: (quiz:AvailableQuiz)=> ReactNode, includeViewAttempts:boolean, deleteAvailableQuiz: (availableQuizUUID: string) => void}) {
+export function AvailableQuizTable({userMap, classID, user, availableQuizzes, isEducator, editQuizButton, includeViewAttempts, deleteAvailableQuiz, title}:{ userMap: UserMap, classID:string, user:OAuthUser, availableQuizzes:AvailableQuiz[], isEducator: boolean, editQuizButton: (quiz:AvailableQuiz)=> ReactNode, includeViewAttempts:boolean, deleteAvailableQuiz: (availableQuizUUID: string) => void, title?: string}) {
     const navigate = useNavigate();
 
     const handleGoToQuiz = (uuid:string) => {
@@ -179,6 +188,12 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
     };
 
     return (
+        <div>
+            {title !== undefined && (
+                <h2 className="mt-10 border-b pb-2 text-3xl font-semibold min-w-fit first:mt-0">
+                    {title}
+                </h2>
+            )}
         <Table>
             {/*<TableCaption>Available Quizzes</TableCaption>*/}
             <TableHeader>
@@ -238,6 +253,7 @@ export function AvailableQuizTable({userMap, classID, user, availableQuizzes, is
                 </TableRow>}
             </TableBody>
         </Table>
+        </div>
     )
 }
 

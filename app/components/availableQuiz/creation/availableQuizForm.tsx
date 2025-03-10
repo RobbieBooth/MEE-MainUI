@@ -579,7 +579,7 @@ export function AvailableQuizForm(
     return (
         <Dialog open={open} onOpenChange={openChange}>
             <DialogTrigger asChild>
-                <Button variant="outline">{createOrEdit} Available Quiz</Button>
+                <Button variant={createOrEdit === "Create" ? "default" : "outline"}>{createOrEdit} Available Quiz</Button>
             </DialogTrigger>
             <DialogContent className="min-w-fit">
                 <DialogHeader>
