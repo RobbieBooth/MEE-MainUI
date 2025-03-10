@@ -111,12 +111,13 @@ interface User {
 type SidebarProps = {
     children: ReactNode;
     user: OAuthUser; // Replace with proper user type
+    currentClassID?: string; //Optional string to open the classes properties if it's the current class
     // sidebarItems: sidebarItem[]; // Replace with proper sidebar items type
 };
 
 
 
-export function MySidebar({ children, user }:SidebarProps) {
+export function MySidebar({ children, user, currentClassID }:SidebarProps) {
     const [userData, setUserData] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -169,7 +170,7 @@ export function MySidebar({ children, user }:SidebarProps) {
             const side: sidebarItem = {
                 title: classInfo.className,
                 url: classURL,
-                isActive: false,
+                isActive: currentClassID != undefined && classInfo.classUUID === currentClassID,
                 children: [
                     gradeSidebar,
                     quizSidebar

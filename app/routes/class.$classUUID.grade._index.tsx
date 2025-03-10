@@ -41,7 +41,7 @@ export default function Dashboard() {
     }, [user.associatedDBUser]);
 
     return (
-        <MySidebar user={user}>
+        <MySidebar user={user} currentClassID={classData.id}>
             <div>
                 <h2 className="pt-4 px-4 text-3xl font-semibold">
                     Your {classData.className} quiz attempts

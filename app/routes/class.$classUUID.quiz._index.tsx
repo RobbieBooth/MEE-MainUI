@@ -47,7 +47,7 @@ export default function SettingPage(){
     }, [classData]);
 
     return (
-        <MySidebar user={user}>
+        <MySidebar user={user}  currentClassID={classUUID}>
             <Button asChild>
                 <a href={`/class/${classUUID}/quiz/setting/`}>
                     Create Quiz

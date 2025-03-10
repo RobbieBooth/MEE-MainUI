@@ -156,7 +156,7 @@ export default function Dashboard() {
 
 
     return (
-        <MySidebar user={user}>
+        <MySidebar user={user} currentClassID={classData.id}>
             {classDataHolder == undefined ? "Loading... Class Data" :
                 <ResizablePanelGroup
                     direction="vertical"
