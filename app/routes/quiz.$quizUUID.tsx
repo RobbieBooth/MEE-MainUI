@@ -378,7 +378,7 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
                             ?
                                 <Button disabled={currentQuestion.studentQuestionAttemptUUID === studentQuizAttempt.questions[studentQuizAttempt.questions.length-1].studentQuestionAttemptUUID} onClick={() =>{moveQuestionDirection("next")}}>Next<ChevronRight/></Button>
                                 :
-                                <Button onClick={submitQuiz}>Submit Quiz</Button>
+                                <Button onClick={submitQuiz} variant={"secondary"}>Submit Quiz</Button>
                         }
 
                     </div>
