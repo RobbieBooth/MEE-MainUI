@@ -369,11 +369,18 @@ export function QuizDisplay({studentQuizAttempt, leaveQuizURL, user, updateQuizQ
                     </div>
                     <div className="flex self-end gap-4 px-4 pb-4 mt-2">
                         <Button onClick={() => saveQuestion(currentQuestion)} disabled={isSubmitted}>Save</Button>
-                        <Button onClick={() => submitQuestion(currentQuestion)} disabled={isSubmitted}>Submit</Button>
+                        <Button onClick={() => submitQuestion(currentQuestion)} disabled={isSubmitted}>Submit Question</Button>
                     </div>
                     <div className="flex justify-between self-end w-full pb-4 px-4">
                         <Button disabled={currentQuestion.studentQuestionAttemptUUID === studentQuizAttempt.questions[0].studentQuestionAttemptUUID} onClick={() =>{moveQuestionDirection("previous")}}><ChevronLeft/>Previous</Button>
-                        <Button disabled={currentQuestion.studentQuestionAttemptUUID === studentQuizAttempt.questions[studentQuizAttempt.questions.length-1].studentQuestionAttemptUUID} onClick={() =>{moveQuestionDirection("next")}}>Next<ChevronRight/></Button>
+                        {
+                            currentQuestion.studentQuestionAttemptUUID !== studentQuizAttempt.questions[studentQuizAttempt.questions.length-1].studentQuestionAttemptUUID
+                            ?
+                                <Button disabled={currentQuestion.studentQuestionAttemptUUID === studentQuizAttempt.questions[studentQuizAttempt.questions.length-1].studentQuestionAttemptUUID} onClick={() =>{moveQuestionDirection("next")}}>Next<ChevronRight/></Button>
+                                :
+                                <Button onClick={() => submitQuiz}>Submit Quiz</Button>
+                        }
+
                     </div>
                 </main>
             </SidebarProvider>
