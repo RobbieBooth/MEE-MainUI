@@ -1,4 +1,4 @@
-import {Calendar, Home, Inbox, Search, Settings, LogOut, BookOpen, Flag, FlagOff} from "lucide-react";
+import {Calendar, Home, Inbox, Search, Settings, LogOut, BookOpen, Flag, FlagOff, BookOpenCheck} from "lucide-react";
 
 import {
     Sidebar,
@@ -46,7 +46,7 @@ export function AppSidebar({leaveQuizFN, questions, currentQuestion, setCurrentQ
                 <SidebarMenu>
                     <SidebarMenuItem key={"LeaveQuiz"}>
                         <SidebarMenuButton asChild>
-                            <a onClick={leaveQuizFN}>
+                            <a onClick={leaveQuizFN} className="hover:cursor-pointer">
                                 <LogOut className="rotate-180" />
                                 <span>Leave Quiz</span>
                             </a>
@@ -94,8 +94,8 @@ export function AppSidebar({leaveQuizFN, questions, currentQuestion, setCurrentQ
                 <SidebarMenu>
                     <SidebarMenuItem key={"ReviewQuiz"}>
                         <SidebarMenuButton asChild>
-                            <a onClick={submitQuizFN}>
-                                <BookOpen />
+                            <a onClick={submitQuizFN} className="hover:cursor-pointer">
+                                <BookOpenCheck />
                                 <span>Submit Quiz</span>
                             </a>
                         </SidebarMenuButton>
