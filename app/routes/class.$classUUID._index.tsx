@@ -10,6 +10,8 @@ import {ClassTable} from "~/components/classes/classTable";
 import {AvailableQuizTable, deleteAvailableQuiz} from "~/components/quizSection/quizDisplayPage";
 import {AvailableQuizForm} from "~/components/availableQuiz/creation/availableQuizForm";
 import {ScrollArea} from "~/components/ui/scroll-area";
+import {HardHat} from "lucide-react";
+import NoItemsFound from "~/components/tables/noItemsFound";
 
 // TypeScript type for Class
 export type Class = {
@@ -188,7 +190,9 @@ export default function Dashboard() {
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                {classDataHolder.educators.map((educatorUUID) => {
+                                                {classDataHolder.educators.length > 0
+                                                    ?
+                                                    (classDataHolder.educators.map((educatorUUID) => {
 
                                                     return (
                                                         <tr key={educatorUUID}>
@@ -203,7 +207,10 @@ export default function Dashboard() {
                                                             </td>
                                                         </tr>
                                                     );
-                                                })}
+                                                }))
+                                                    :
+                                                    <NoItemsFound logo={HardHat} message={"No educators found..."}/>
+                                                }
                                                 </tbody>
                                             </table>
                                         </div>
@@ -215,7 +222,9 @@ export default function Dashboard() {
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                {classDataHolder.students.map((studentUUID) => {
+                                                {classDataHolder.students.length > 0
+                                                    ?
+                                                    (classDataHolder.students.map((studentUUID) => {
                                                     return (
                                                         <tr key={studentUUID}>
                                                             <td>
@@ -229,7 +238,10 @@ export default function Dashboard() {
                                                             </td>
                                                         </tr>
                                                     );
-                                                })}
+                                                }))
+                                                    :
+                                                    <NoItemsFound logo={HardHat} message={"No students found..."}/>
+                                                }
                                                 </tbody>
                                             </table>
                                         </div>
