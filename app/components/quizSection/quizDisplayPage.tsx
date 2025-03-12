@@ -123,14 +123,18 @@ export function VersionQuizDialog({classID, quizzesVersions, isEducator, disable
             <DialogTrigger asChild disabled={disabled}>
                 <Button variant="outline">View Versions</Button>
             </DialogTrigger>
-            <DialogContent className="min-w-fit">
+            <DialogContent className="min-w-fit max-[h-3/4]">
                 <DialogHeader>
                     <DialogTitle>Quiz Versions</DialogTitle>
                     {/*<DialogDescription>*/}
                     {/*    Create a new quiz which is available to students to complete*/}
                     {/*</DialogDescription>*/}
                 </DialogHeader>
-                <QuizVersionTable classID={classID} quizzesVersions={quizzesVersions} isEducator={isEducator} />
+                <ScrollArea className="w-full h-full">
+                    <div className="w-full">
+                        <QuizVersionTable classID={classID} quizzesVersions={quizzesVersions} isEducator={isEducator} />
+                    </div>
+                </ScrollArea>
             </DialogContent>
         </Dialog>
     )

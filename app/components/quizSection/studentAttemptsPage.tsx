@@ -5,6 +5,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "~/c
 import React from "react";
 import {useNavigate} from "react-router";
 import NoItemsFound from "~/components/tables/noItemsFound";
+import {ScrollArea} from "~/components/ui/scroll-area";
 
 export function AttemptsDialog({userMap, classID, studentAttempts, isEducator, disabled, availableQuizID, quizID}:{ userMap:UserMap, classID:string, studentAttempts:SampleStudentAttempt[], isEducator: boolean, disabled:boolean, availableQuizID: string,  quizID:string}) {
     return(
@@ -12,14 +13,19 @@ export function AttemptsDialog({userMap, classID, studentAttempts, isEducator, d
             <DialogTrigger asChild disabled={disabled}>
                 <Button variant="outline">View Attempts</Button>
             </DialogTrigger>
-            <DialogContent className="min-w-fit">
+            <DialogContent className="min-w-fit max-[h-3/4]">
                 <DialogHeader>
                     <DialogTitle>Student Attempts {quizID}</DialogTitle>
                     {/*<DialogDescription>*/}
                     {/*    Create a new quiz which is available to students to complete*/}
                     {/*</DialogDescription>*/}
                 </DialogHeader>
-                <StudentAttemptsTable classID={classID} studentAttempts={studentAttempts} isEducator={isEducator}  userMap={userMap} availableQuizID={availableQuizID}/>
+                <ScrollArea className="w-full h-full">
+                    <div className="w-full">
+                        <StudentAttemptsTable classID={classID} studentAttempts={studentAttempts} isEducator={isEducator}  userMap={userMap} availableQuizID={availableQuizID}/>
+                    </div>
+                </ScrollArea>
+
             </DialogContent>
         </Dialog>
     )

@@ -26,6 +26,7 @@ import {ClassTable, updateClassHolder} from "~/components/classes/classTable";
 import {Button} from "~/components/ui/button";
 import {useNavigate} from "react-router";
 import {ClassForm} from "~/components/classes/creation/classCreation";
+import {ScrollArea} from "~/components/ui/scroll-area";
 
 export async function getClassesFromBackend(user: OAuthUser) {
     const response = await fetch("http://localhost:8080/v1/api/class/", {
@@ -94,7 +95,7 @@ export default function Dashboard() {
                     <div className="pt-4 pl-4">
 
                     </div>
-                    <div className="flex h-full w-full items-center justify-center p-6">
+                    <ScrollArea className="flex h-full w-full items-center justify-center p-6">
                         <div className="block w-full h-full">
                             <div className="pb-4">
                                 <ClassForm userEmail={user.email!} classFormFields={{className:"", classDescription: "", classEducatorEmails: [], classStudentEmails:[]}} createOrEdit={"Create"} updateOrEditClass={updatedClass => {
@@ -104,7 +105,7 @@ export default function Dashboard() {
                             </div>
                             <ClassTable user={user} classes={classesHolder} triggerRefresh={() => triggerSidebarRefresh(setRefreshKey)}/>
                         </div>
-                    </div>
+                    </ScrollArea>
                 </ResizablePanel>
             </ResizablePanelGroup>
 
