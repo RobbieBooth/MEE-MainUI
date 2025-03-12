@@ -81,7 +81,7 @@ function SidebarItem({item}: { item: sidebarItem}) {
                     // key={componentKey}
                 >
                     <SidebarMenuButton asChild>
-                        <a href={item.url}>
+                        <a href={item.url} className="w-full">
                             {item.icon && <item.icon />}
                             <span>{item.title}</span>
                         </a>
@@ -101,7 +101,7 @@ function SidebarItem({item}: { item: sidebarItem}) {
                     <SidebarMenuItem>
 
                         <SidebarMenuButton tooltip={item.title}>
-                            <a href={item.url} className="inline-flex space-x-1">
+                            <a href={item.url} className="inline-flex space-x-1 w-full">
                                 {item.icon && <item.icon/>}
                                 <span>{item.title}</span>
                             </a>
