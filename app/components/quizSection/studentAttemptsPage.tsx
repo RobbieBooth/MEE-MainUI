@@ -13,7 +13,7 @@ export function AttemptsDialog({userMap, classID, studentAttempts, isEducator, d
             <DialogTrigger asChild disabled={disabled}>
                 <Button variant="outline">View Attempts</Button>
             </DialogTrigger>
-            <DialogContent className="min-w-fit max-[h-3/4]">
+            <DialogContent className="min-w-fit h-1/2">
                 <DialogHeader>
                     <DialogTitle>Student Attempts {quizID}</DialogTitle>
                     {/*<DialogDescription>*/}
